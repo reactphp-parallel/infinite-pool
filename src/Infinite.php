@@ -8,6 +8,7 @@ use React\EventLoop\TimerInterface;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
 use WyriHaximus\PoolInfo\Info;
+use function React\Promise\reject;
 
 final class Infinite implements LowLevelPoolInterface
 {
@@ -32,8 +33,11 @@ final class Infinite implements LowLevelPoolInterface
     /** @var float */
     private $ttl;
 
-    /** @var Group[] */
+    /** @var GroupInterface[] */
     private $groups = [];
+
+    /** @var bool */
+    private $closed = false;
 
     /**
      * @param LoopInterface $loop
@@ -56,6 +60,10 @@ final class Infinite implements LowLevelPoolInterface
 
     public function run(Closure $callable, array $args = []): PromiseInterface
     {
+        if ($this->closed === true) {
+            return reject(ClosedException::create());
+        }
+
         return (new Promise(function ($resolve, $reject): void {
             if (\count($this->idleRuntimes) === 0) {
                 $resolve($this->spawnRuntime());
@@ -78,26 +86,40 @@ final class Infinite implements LowLevelPoolInterface
         });
     }
 
-    public function close(): void
+    /**
+     * {@inheritDoc}
+     */
+    public function close(): bool
     {
         if (count($this->groups) > 0) {
-            return;
+            return false;
         }
+
+        $this->closed = true;
 
         foreach ($this->runtimes as $hash => $runtime) {
             $this->closeRuntime($hash);
         }
+
+        return true;
     }
 
-    public function kill(): void
+    /**
+     * {@inheritDoc}
+     */
+    public function kill(): bool
     {
         if (count($this->groups) > 0) {
-            return;
+            return false;
         }
+
+        $this->closed = true;
 
         foreach ($this->runtimes as $runtime) {
             $runtime->kill();
         }
+
+        return true;
     }
 
     public function info(): iterable
@@ -109,7 +131,7 @@ final class Infinite implements LowLevelPoolInterface
         yield Info::SIZE  => \count($this->runtimes);
     }
 
-    public function acquireGroup(): Group
+    public function acquireGroup(): GroupInterface
     {
         $group = Group::create();
         $this->groups[(string)$group] = $group;
@@ -117,7 +139,7 @@ final class Infinite implements LowLevelPoolInterface
         return $group;
     }
 
-    public function releaseGroup(Group $group): void
+    public function releaseGroup(GroupInterface $group): void
     {
         unset($this->groups[(string)$group]);
     }

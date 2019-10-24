@@ -2,7 +2,7 @@
 
 namespace WyriHaximus\React\Parallel;
 
-final class Group
+final class Group implements GroupInterface
 {
     private const BYTES = 16;
 
