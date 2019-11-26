@@ -33,7 +33,7 @@ jobs:
       matrix:
         php: [7.3]
         composer: [lowest, current, highest]
-        example: [sleep, versions, json]
+        example: [sleep, versions, json, exception]
     needs: composer-install
     runs-on: ubuntu-latest
     container:
