@@ -15,6 +15,27 @@ To install via [Composer](http://getcomposer.org/), use the command below, it wi
 composer require wyrihaximus/react-parallel-infinite-pool 
 ```
 
+## Usage ##
+
+The following example will spin up a thread with a 1 second TTL clean up policy. Meaning that threads are kept around 
+for 1 second waiting for something to do before closed. It then runs a closure in the thread that will wait for one 
+second before returning an message. Upon receiving that message the mean thread will echo out that message before 
+closing the pool;
+
+```php
+$loop = Factory::create();
+$finite = new Infinite($loop, 1);
+$finite->run(function () {
+    sleep(1);
+
+    return 'Hoi!';
+})->then(function (string $message) use ($infinite) {
+    echo $message, PHP_EOL;
+    $infinite->close();
+});
+$loop->run();
+```
+
 ## License ##
 
 Copyright 2019 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
