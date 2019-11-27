@@ -64,7 +64,7 @@ final class Infinite implements LowLevelPoolInterface
             return reject(ClosedException::create());
         }
 
-        return (new Promise(function ($resolve, $reject): void {
+        return (new Promise(function (callable $resolve, callable $reject): void {
             if (\count($this->idleRuntimes) === 0) {
                 $resolve($this->spawnRuntime());
 
@@ -72,7 +72,8 @@ final class Infinite implements LowLevelPoolInterface
             }
 
             $resolve($this->getIdleRuntime());
-        }))->then(function (Runtime $runtime) use ($callable, $args) {
+        }))->then(function (Runtime $runtime) use ($callable, $args): PromiseInterface {
+            /** @psalm-suppress UndefinedInterfaceMethod */
             return $runtime->run($callable, $args)->always(function () use ($runtime): void {
                 if ($this->ttl >= 0.1) {
                     $this->addRuntimeToIdleList($runtime);

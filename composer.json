@@ -14,7 +14,6 @@
         "ext-parallel": "*",
         "react/event-loop": "^1.1",
         "react/promise": "^2.7",
-        "reactivex/rxphp": "^2.0",
         "wyrihaximus/pool-info": "^1.0",
         "wyrihaximus/react-parallel-contracts": "^1.0",
         "wyrihaximus/react-parallel-future-to-promise-converter": "^1.1 || ^1.0.1",
@@ -55,35 +54,48 @@
         "ci-coverage": [
             "if [ -f ./build/logs/clover.xml ]; then wget https://scrutinizer-ci.com/ocular.phar && php ocular.phar code-coverage:upload --format=php-clover ./build/logs/clover.xml; fi"
         ],
+        "composer-require-checker": [
+            "composer-require-checker --ignore-parse-errors --ansi -vvv  --config-file=composer-require-checker.json"
+        ],
         "cs": [
             "php-cs-fixer fix --config=.php_cs --ansi --dry-run --diff --verbose --allow-risky=yes --show-progress=estimating"
         ],
         "cs-fix": [
             "php-cs-fixer fix --config=.php_cs --ansi --verbose --allow-risky=yes --show-progress=estimating"
         ],
+        "ensure-installed": "composer install --ansi -n -q",
         "infection": [
             "infection --ansi --min-msi=100 --min-covered-msi=100 --threads=$(nproc)"
         ],
         "lint-php": [
             "parallel-lint --exclude vendor ."
         ],
+        "psalm": [
+            "psalm --threads=$(nproc)"
+        ],
         "qa-all": [
             "composer validate --ansi",
             "composer normalize --ansi",
+            "composer unused --ansi",
             "@lint-php",
             "@cs",
             "@stan",
+            "@psalm",
             "@unit",
-            "@infection"
+            "@infection",
+            "@composer-require-checker"
         ],
         "qa-all-extended": [
             "composer validate --ansi",
             "composer normalize --ansi",
+            "composer unused --ansi",
             "@lint-php",
             "@cs",
             "@stan",
+            "@psalm",
             "@unit-coverage",
-            "@infection"
+            "@infection",
+            "@composer-require-checker"
         ],
         "qa-ci": [
             "@unit"
@@ -96,12 +108,6 @@
         ],
         "qa-contrib": [
             "@qa-all"
-        ],
-        "qa-windows": [
-            "@lint-php",
-            "@cs",
-            "@stan",
-            "@unit"
         ],
         "stan": [
             "phpstan analyse src tests --level max --ansi -c phpstan.neon"
