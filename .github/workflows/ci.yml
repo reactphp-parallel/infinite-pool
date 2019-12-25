@@ -44,9 +44,9 @@ jobs:
         uses: actions/cache@v1.0.1
         with:
           path: ./vendor/
-        key: ${{ matrix.composer }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ matrix.composer }}-${{ hashFiles('**/composer.lock') }}
       - name: 'Run Example: ${{ matrix.example }}'
-      run: php ./examples/${{ matrix.example }}.php
+        run: php ./examples/${{ matrix.example }}.php
   qa:
     strategy:
       matrix:
