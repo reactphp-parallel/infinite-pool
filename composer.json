@@ -26,7 +26,7 @@
         "ocramius/package-versions": "^1.4",
         "wyrihaximus/async-test-utilities": "^1.2.1",
         "wyrihaximus/iterator-or-array-to-array": "^1.1",
-        "wyrihaximus/react-parallel-pool-tests": "dev-master"
+        "wyrihaximus/react-parallel-pool-tests": "^1.0"
     },
     "config": {
         "platform": {
