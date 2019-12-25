@@ -22,14 +22,23 @@ cs:
 cs-fix:
 	composer cs-fix
 
-infection:
-	composer infection
-
 unit:
 	composer run-script unit --timeout=0
 
+lint:
+	composer run-script lint --timeout=0
+
 stan:
 	composer run-script stan --timeout=0
+
+psalm:
+	composer run-script psalm --timeout=0
+
+composer-require-checker:
+	composer run-script composer-require-checker --timeout=0
+
+composer-unused:
+	composer unused
 
 unit-coverage:
 	composer run-script unit-coverage --timeout=0

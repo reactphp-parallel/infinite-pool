@@ -64,10 +64,7 @@
             "php-cs-fixer fix --config=.php_cs --ansi --verbose --allow-risky=yes --show-progress=estimating"
         ],
         "ensure-installed": "composer install --ansi -n -q",
-        "infection": [
-            "infection --ansi --min-msi=100 --min-covered-msi=100 --threads=$(nproc)"
-        ],
-        "lint-php": [
+        "lint": [
             "parallel-lint --exclude vendor ."
         ],
         "psalm": [
@@ -77,24 +74,20 @@
             "composer validate --ansi",
             "composer normalize --ansi",
             "composer unused --ansi",
-            "@lint-php",
+            "@lint",
             "@cs",
             "@stan",
             "@psalm",
-            "@unit",
-            "@infection",
             "@composer-require-checker"
         ],
         "qa-all-extended": [
             "composer validate --ansi",
             "composer normalize --ansi",
             "composer unused --ansi",
-            "@lint-php",
+            "@lint",
             "@cs",
             "@stan",
             "@psalm",
-            "@unit-coverage",
-            "@infection",
             "@composer-require-checker"
         ],
         "qa-ci": [
@@ -110,13 +103,7 @@
             "@qa-all"
         ],
         "stan": [
-            "phpstan analyse src tests --level max --ansi -c phpstan.neon"
-        ],
-        "unit": [
-            "phpunit --colors=always -c phpunit.xml.dist"
-        ],
-        "unit-coverage": [
-            "phpunit --colors=always -c phpunit.xml.dist --coverage-text --coverage-html covHtml --coverage-clover ./build/logs/clover.xml"
+            "phpstan analyse src --level max --ansi -c phpstan.neon"
         ]
     }
 }
