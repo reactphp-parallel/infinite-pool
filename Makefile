@@ -34,6 +34,7 @@ unit:
 
 infection:
 	$(DOCKER_RUN) vendor/bin/infection --ansi --min-msi=100 --min-covered-msi=100 --threads=$(nproc)
+	$(DOCKER_RUN) cat infection.log
 
 composer-require-checker:
 	$(DOCKER_RUN) vendor/bin/composer-require-checker --ignore-parse-errors --ansi -vvv
