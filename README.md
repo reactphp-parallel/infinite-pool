@@ -1,9 +1,9 @@
 # reactphp-parallel-infinite-pool
 
-[![Build Status](https://travis-ci.com/WyriHaximus/reactphp-parallel-infinite-pool.png)](https://travis-ci.com/WyriHaximus/reactphp-parallel-infinite-pool)
-[![Latest Stable Version](https://poser.pugx.org/WyriHaximus/react-parallel-infinite-pool/v/stable.png)](https://packagist.org/packages/WyriHaximus/react-parallel-infinite-pool)
-[![Total Downloads](https://poser.pugx.org/WyriHaximus/react-parallel-infinite-pool/downloads.png)](https://packagist.org/packages/WyriHaximus/react-parallel-infinite-pool)
-[![License](https://poser.pugx.org/wyrihaximus/react-parallel-infinite-pool/license.png)](https://packagist.org/packages/wyrihaximus/react-parallel-infinite-pool)
+[![Build Status](https://travis-ci.com/Reactphp-parallel/infinite-pool.png)](https://travis-ci.com/Reactphp-parallel/infinite-pool)
+[![Latest Stable Version](https://poser.pugx.org/React-parallel/infinite-pool/v/stable.png)](https://packagist.org/packages/React-parallel/infinite-pool)
+[![Total Downloads](https://poser.pugx.org/React-parallel/infinite-pool/downloads.png)](https://packagist.org/packages/React-parallel/infinite-pool)
+[![License](https://poser.pugx.org/react-parallel/infinite-pool/license.png)](https://packagist.org/packages/react-parallel/infinite-pool)
 
 ReactPHP bindings around ext-parallel-infinite-pool
 
@@ -12,7 +12,7 @@ ReactPHP bindings around ext-parallel-infinite-pool
 To install via [Composer](http://getcomposer.org/), use the command below, it will automatically detect the latest version and bind it with `~`.
 
 ```
-composer require wyrihaximus/react-parallel-infinite-pool 
+composer require react-parallel/infinite-pool 
 ```
 
 ## Usage ##

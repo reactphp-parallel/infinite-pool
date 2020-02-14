@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace WyriHaximus\React\Tests\Parallel;
+namespace ReactParallel\Tests\Pool\Infinite;
 
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
-use function WyriHaximus\iteratorOrArrayToArray;
+use ReactParallel\Contracts\PoolInterface;
+use ReactParallel\Pool\Infinite\Infinite;
+use ReactParallel\Tests\AbstractPoolTest;
 use WyriHaximus\PoolInfo\Info;
 use WyriHaximus\PoolInfo\PoolInfoInterface;
 use WyriHaximus\PoolInfo\PoolInfoTestTrait;
-use WyriHaximus\React\Parallel\Infinite;
-use WyriHaximus\React\Parallel\PoolInterface;
+use function WyriHaximus\iteratorOrArrayToArray;
 use function Safe\sleep;
 
 /**
@@ -36,7 +37,7 @@ final class InfiniteTest extends AbstractPoolTest
             Info::SIZE  => 0,
         ], iteratorOrArrayToArray($pool->info()));
 
-        $pool->run(function () {
+        $pool->run(function (): int {
             sleep(3);
 
             return 42;
@@ -79,7 +80,7 @@ final class InfiniteTest extends AbstractPoolTest
             Info::SIZE  => 0,
         ], iteratorOrArrayToArray($pool->info()));
 
-        $pool->run(function () {
+        $pool->run(function (): int {
             sleep(3);
 
             return 42;
@@ -92,7 +93,7 @@ final class InfiniteTest extends AbstractPoolTest
                 Info::SIZE  => 1,
             ], iteratorOrArrayToArray($pool->info()));
 
-            $promise= $pool->run(function () {
+            $promise= $pool->run(function (): void {
                 sleep(1);
             });
 
@@ -128,7 +129,7 @@ final class InfiniteTest extends AbstractPoolTest
         $loop->run();
     }
 
-    protected function poolFactory(): PoolInfoInterface
+    private function poolFactory(): PoolInfoInterface
     {
         return new Infinite(Factory::create(), 5);
     }

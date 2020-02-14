@@ -1,9 +1,10 @@
 parameters:
 	ignoreErrors:
 		- '#Call to an undefined method React\\Promise\\PromiseInterface::always\(\).#'
-	classesAllowedToBeExtended:
-		- Exception
-		- WyriHaximus\React\Tests\Parallel\AbstractPoolTest
+	ergebnis:
+		classesAllowedToBeExtended:
+			- Exception
+			- ReactParallel\Tests\AbstractPoolTest
 
 includes:
 	- vendor/wyrihaximus/async-test-utilities/rules.neon

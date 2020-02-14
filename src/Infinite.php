@@ -1,56 +1,61 @@
 <?php declare(strict_types=1);
 
-namespace WyriHaximus\React\Parallel;
+namespace ReactParallel\Pool\Infinite;
 
 use Closure;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\TimerInterface;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
+use ReactParallel\Contracts\ClosedException;
+use ReactParallel\Contracts\GroupInterface;
+use ReactParallel\Contracts\LowLevelPoolInterface;
+use ReactParallel\FutureToPromiseConverter\FutureToPromiseConverter;
+use ReactParallel\Runtime\Runtime;
 use WyriHaximus\PoolInfo\Info;
+use function array_key_exists;
+use function array_pop;
+use function assert;
+use function count;
+use function dirname;
+use function file_exists;
+use function is_string;
 use function React\Promise\reject;
+use function spl_object_hash;
+use const DIRECTORY_SEPARATOR;
 
 final class Infinite implements LowLevelPoolInterface
 {
-    /** @var LoopInterface */
-    private $loop;
+    private LoopInterface $loop;
 
     /** @var Runtime[] */
-    private $runtimes = [];
+    private array $runtimes = [];
 
     /** @var string[] */
-    private $idleRuntimes = [];
+    private array $idleRuntimes = [];
 
     /** @var TimerInterface[] */
-    private $ttlTimers = [];
+    private array $ttlTimers = [];
 
-    /** @var FutureToPromiseConverter */
-    private $futureConverter;
+    private FutureToPromiseConverter $futureConverter;
 
-    /** @var string */
-    private $autoload;
+    private string $autoload;
 
-    /** @var float */
-    private $ttl;
+    private float $ttl;
 
     /** @var GroupInterface[] */
-    private $groups = [];
+    private array $groups = [];
 
-    /** @var bool */
-    private $closed = false;
+    private bool $closed = false;
 
-    /**
-     * @param LoopInterface $loop
-     * @param float         $ttl
-     */
     public function __construct(LoopInterface $loop, float $ttl)
     {
-        $this->loop = $loop;
-        $this->ttl = $ttl;
-        $this->autoload = \dirname(__FILE__) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php';
+        $this->loop     = $loop;
+        $this->ttl      = $ttl;
+        $this->autoload = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
         foreach ([2, 5] as $level) {
-            $this->autoload = \dirname(__FILE__, $level) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php';
-            if (\file_exists($this->autoload)) {
+            $this->autoload = dirname(__FILE__, $level) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+            if (file_exists($this->autoload)) {
                 break;
             }
         }
@@ -58,6 +63,9 @@ final class Infinite implements LowLevelPoolInterface
         $this->futureConverter = new FutureToPromiseConverter($loop);
     }
 
+    /**
+     * @param mixed[] $args
+     */
     public function run(Closure $callable, array $args = []): PromiseInterface
     {
         if ($this->closed === true) {
@@ -65,7 +73,7 @@ final class Infinite implements LowLevelPoolInterface
         }
 
         return (new Promise(function (callable $resolve, callable $reject): void {
-            if (\count($this->idleRuntimes) === 0) {
+            if (count($this->idleRuntimes) === 0) {
                 $resolve($this->spawnRuntime());
 
                 return;
@@ -82,14 +90,11 @@ final class Infinite implements LowLevelPoolInterface
                     return;
                 }
 
-                $this->closeRuntime(\spl_object_hash($runtime));
+                $this->closeRuntime(spl_object_hash($runtime));
             });
         });
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function close(): bool
     {
         if (count($this->groups) > 0) {
@@ -105,9 +110,6 @@ final class Infinite implements LowLevelPoolInterface
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function kill(): bool
     {
         if (count($this->groups) > 0) {
@@ -123,34 +125,37 @@ final class Infinite implements LowLevelPoolInterface
         return true;
     }
 
+    /**
+     * @return iterable<string, int>
+     */
     public function info(): iterable
     {
-        yield Info::TOTAL => \count($this->runtimes);
-        yield Info::BUSY => \count($this->runtimes) - \count($this->idleRuntimes);
+        yield Info::TOTAL => count($this->runtimes);
+        yield Info::BUSY => count($this->runtimes) - count($this->idleRuntimes);
         yield Info::CALLS => 0;
-        yield Info::IDLE  => \count($this->idleRuntimes);
-        yield Info::SIZE  => \count($this->runtimes);
+        yield Info::IDLE  => count($this->idleRuntimes);
+        yield Info::SIZE  => count($this->runtimes);
     }
 
     public function acquireGroup(): GroupInterface
     {
-        $group = Group::create();
-        $this->groups[(string)$group] = $group;
+        $group                         = Group::create();
+        $this->groups[(string) $group] = $group;
 
         return $group;
     }
 
     public function releaseGroup(GroupInterface $group): void
     {
-        unset($this->groups[(string)$group]);
+        unset($this->groups[(string) $group]);
     }
 
     private function getIdleRuntime(): Runtime
     {
-        /** @var string $hash */
-        $hash = \array_pop($this->idleRuntimes);
+        $hash = array_pop($this->idleRuntimes);
+        assert(is_string($hash));
 
-        if (\array_key_exists($hash, $this->ttlTimers)) {
+        if (array_key_exists($hash, $this->ttlTimers)) {
             $this->loop->cancelTimer($this->ttlTimers[$hash]);
             unset($this->ttlTimers[$hash]);
         }
@@ -160,21 +165,21 @@ final class Infinite implements LowLevelPoolInterface
 
     private function addRuntimeToIdleList(Runtime $runtime): void
     {
-        $hash = \spl_object_hash($runtime);
+        $hash                      = spl_object_hash($runtime);
         $this->idleRuntimes[$hash] = $hash;
     }
 
     private function spawnRuntime(): Runtime
     {
-        $runtime = new Runtime($this->futureConverter, $this->autoload);
-        $this->runtimes[\spl_object_hash($runtime)] = $runtime;
+        $runtime                                   = new Runtime($this->futureConverter, $this->autoload);
+        $this->runtimes[spl_object_hash($runtime)] = $runtime;
 
         return $runtime;
     }
 
     private function startTtlTimer(Runtime $runtime): void
     {
-        $hash = \spl_object_hash($runtime);
+        $hash = spl_object_hash($runtime);
 
         $this->ttlTimers[$hash] = $this->loop->addTimer($this->ttl, function () use ($hash): void {
             $this->closeRuntime($hash);
@@ -188,12 +193,16 @@ final class Infinite implements LowLevelPoolInterface
 
         unset($this->runtimes[$hash]);
 
-        if (\array_key_exists($hash, $this->idleRuntimes)) {
+        if (array_key_exists($hash, $this->idleRuntimes)) {
             unset($this->idleRuntimes[$hash]);
         }
-        if (\array_key_exists($hash, $this->ttlTimers)) {
-            $this->loop->cancelTimer($this->ttlTimers[$hash]);
-            unset($this->ttlTimers[$hash]);
+
+        if (! array_key_exists($hash, $this->ttlTimers)) {
+            return;
         }
+
+        $this->loop->cancelTimer($this->ttlTimers[$hash]);
+
+        unset($this->ttlTimers[$hash]);
     }
 }

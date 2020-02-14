@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace WyriHaximus\React\Parallel;
+namespace ReactParallel\Pool\Infinite;
 
+use ReactParallel\Contracts\GroupInterface;
 use function bin2hex;
 use function random_bytes;
 
@@ -9,8 +10,7 @@ final class Group implements GroupInterface
 {
     private const BYTES = 16;
 
-    /** @var string */
-    private $id;
+    private string $id;
 
     private function __construct(string $id)
     {
