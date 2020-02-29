@@ -1,9 +1,11 @@
 # reactphp-parallel-infinite-pool
 
-[![Build Status](https://travis-ci.com/Reactphp-parallel/infinite-pool.png)](https://travis-ci.com/Reactphp-parallel/infinite-pool)
+![Continuous Integration](https://github.com/Reactphp-parallel/infinite-pool/workflows/Continuous%20Integration/badge.svg)
 [![Latest Stable Version](https://poser.pugx.org/React-parallel/infinite-pool/v/stable.png)](https://packagist.org/packages/React-parallel/infinite-pool)
 [![Total Downloads](https://poser.pugx.org/React-parallel/infinite-pool/downloads.png)](https://packagist.org/packages/React-parallel/infinite-pool)
-[![License](https://poser.pugx.org/react-parallel/infinite-pool/license.png)](https://packagist.org/packages/react-parallel/infinite-pool)
+[![Code Coverage](https://scrutinizer-ci.com/g/Reactphp-parallel/infinite-pool/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Reactphp-parallel/infinite-pool/?branch=master)
+[![Type Coverage](https://shepherd.dev/github/Reactphp-parallel/infinite-pool/coverage.svg)](https://shepherd.dev/github/Reactphp-parallel/infinite-pool)
+[![License](https://poser.pugx.org/React-parallel/infinite-pool/license.png)](https://packagist.org/packages/React-parallel/infinite-pool)
 
 ReactPHP bindings around ext-parallel-infinite-pool
 
