@@ -6,6 +6,7 @@ use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
 use ReactParallel\Contracts\PoolInterface;
+use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 use ReactParallel\Tests\AbstractPoolTest;
 use WyriHaximus\PoolInfo\Info;
@@ -27,7 +28,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function withAZeroTTLThreadsShouldBeKilledOffImmidetally(): void
     {
         $loop = Factory::create();
-        $pool = new Infinite($loop, 0.0);
+        $pool = new Infinite($loop, new EventLoopBridge($loop), 0.0);
 
         self::assertSame([
             Info::TOTAL => 0,
@@ -37,11 +38,11 @@ final class InfiniteTest extends AbstractPoolTest
             Info::SIZE  => 0,
         ], iteratorOrArrayToArray($pool->info()));
 
-        $pool->run(function (): int {
+        $promise = $pool->run(function (): int {
             sleep(3);
 
             return 42;
-        })->then(function () use ($pool): void {
+        })->then(function (int $asteriks) use ($pool): int {
             self::assertSame([
                 Info::TOTAL => 0,
                 Info::BUSY => 0,
@@ -49,6 +50,8 @@ final class InfiniteTest extends AbstractPoolTest
                 Info::IDLE  => 0,
                 Info::SIZE  => 0,
             ], iteratorOrArrayToArray($pool->info()));
+
+            return $asteriks;
         });
 
         $loop->addTimer(1, function () use ($pool): void {
@@ -61,7 +64,8 @@ final class InfiniteTest extends AbstractPoolTest
             ], iteratorOrArrayToArray($pool->info()));
         });
 
-        $loop->run();
+        self::assertSame(42, $this->await($promise, $loop, 13));
+        $pool->kill();
     }
 
     /**
@@ -70,7 +74,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function withAnAlmostZeroTTLThreadsShouldNotBeKilledOffImmidetally(): void
     {
         $loop = Factory::create();
-        $pool = new Infinite($loop, 5);
+        $pool = new Infinite($loop, new EventLoopBridge($loop), 5);
 
         self::assertSame([
             Info::TOTAL => 0,
@@ -80,11 +84,11 @@ final class InfiniteTest extends AbstractPoolTest
             Info::SIZE  => 0,
         ], iteratorOrArrayToArray($pool->info()));
 
-        $pool->run(function (): int {
+        $promise = $pool->run(function (): int {
             sleep(3);
 
             return 42;
-        })->then(function () use ($pool): PromiseInterface {
+        })->then(function (int $asteriks) use ($pool): PromiseInterface {
             self::assertSame([
                 Info::TOTAL => 1,
                 Info::BUSY => 0,
@@ -93,20 +97,22 @@ final class InfiniteTest extends AbstractPoolTest
                 Info::SIZE  => 1,
             ], iteratorOrArrayToArray($pool->info()));
 
-            $promise= $pool->run(function (): void {
+            $promise= $pool->run(function () use ($asteriks): int {
                 sleep(1);
+
+                return $asteriks;
             });
 
             self::assertSame([
                 Info::TOTAL => 1,
-                Info::BUSY => 0,
+                Info::BUSY => 1,
                 Info::CALLS => 0,
-                Info::IDLE  => 1,
+                Info::IDLE  => 0,
                 Info::SIZE  => 1,
             ], iteratorOrArrayToArray($pool->info()));
 
             return $promise;
-        })->then(function () use ($pool): void {
+        })->then(function (int $asteriks) use ($pool): int {
             self::assertSame([
                 Info::TOTAL => 1,
                 Info::BUSY => 0,
@@ -114,6 +120,8 @@ final class InfiniteTest extends AbstractPoolTest
                 Info::IDLE  => 1,
                 Info::SIZE  => 1,
             ], iteratorOrArrayToArray($pool->info()));
+
+            return $asteriks;
         });
 
         $loop->addTimer(1, function () use ($pool): void {
@@ -126,17 +134,19 @@ final class InfiniteTest extends AbstractPoolTest
             ], iteratorOrArrayToArray($pool->info()));
         });
 
-        $loop->run();
+        self::assertSame(42, $this->await($promise, $loop, 13));
+        $pool->kill();
     }
 
     private function poolFactory(): PoolInfoInterface
     {
-        return new Infinite(Factory::create(), 5);
+        $loop = Factory::create();
+        return new Infinite($loop, new EventLoopBridge($loop), 5);
     }
 
     protected function createPool(LoopInterface $loop): PoolInterface
     {
-        return new Infinite($loop, 5);
+        return new Infinite($loop, new EventLoopBridge($loop), 5);
     }
 
     /**
@@ -144,7 +154,8 @@ final class InfiniteTest extends AbstractPoolTest
      */
     public function aquireLock(): void
     {
-        $pool = new Infinite(Factory::create(), 5);
+        $loop = Factory::create();
+        $pool = new Infinite($loop, new EventLoopBridge($loop), 5);
 
         $group = $pool->acquireGroup();
         self::assertFalse($pool->close());

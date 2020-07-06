@@ -1,8 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactParallel\Pool\Infinite;
 
 use ReactParallel\Contracts\GroupInterface;
+
 use function bin2hex;
 use function random_bytes;
 
