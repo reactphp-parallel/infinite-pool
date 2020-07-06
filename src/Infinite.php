@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace ReactParallel\Pool\Infinite;
 
@@ -10,9 +12,10 @@ use React\Promise\PromiseInterface;
 use ReactParallel\Contracts\ClosedException;
 use ReactParallel\Contracts\GroupInterface;
 use ReactParallel\Contracts\LowLevelPoolInterface;
-use ReactParallel\FutureToPromiseConverter\FutureToPromiseConverter;
+use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Runtime\Runtime;
 use WyriHaximus\PoolInfo\Info;
+
 use function array_key_exists;
 use function array_pop;
 use function assert;
@@ -22,6 +25,7 @@ use function file_exists;
 use function is_string;
 use function React\Promise\reject;
 use function spl_object_hash;
+
 use const DIRECTORY_SEPARATOR;
 
 final class Infinite implements LowLevelPoolInterface
@@ -37,7 +41,7 @@ final class Infinite implements LowLevelPoolInterface
     /** @var TimerInterface[] */
     private array $ttlTimers = [];
 
-    private FutureToPromiseConverter $futureConverter;
+    private EventLoopBridge $eventLoopBridge;
 
     private string $autoload;
 
@@ -48,7 +52,7 @@ final class Infinite implements LowLevelPoolInterface
 
     private bool $closed = false;
 
-    public function __construct(LoopInterface $loop, float $ttl)
+    public function __construct(LoopInterface $loop, EventLoopBridge $eventLoopBridge, float $ttl)
     {
         $this->loop     = $loop;
         $this->ttl      = $ttl;
@@ -60,7 +64,7 @@ final class Infinite implements LowLevelPoolInterface
             }
         }
 
-        $this->futureConverter = new FutureToPromiseConverter($loop);
+        $this->eventLoopBridge = $eventLoopBridge;
     }
 
     /**
@@ -171,7 +175,7 @@ final class Infinite implements LowLevelPoolInterface
 
     private function spawnRuntime(): Runtime
     {
-        $runtime                                   = new Runtime($this->futureConverter, $this->autoload);
+        $runtime                                   = new Runtime($this->eventLoopBridge, $this->autoload);
         $this->runtimes[spl_object_hash($runtime)] = $runtime;
 
         return $runtime;
