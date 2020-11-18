@@ -42,6 +42,25 @@ $infinite->run(function () {
 $loop->run();
 ```
 
+## Metrics
+
+This package supports metrics through [`wyrihaximus/metrics`](https://github.com/wyrihaximus/php-metrics):
+
+```php
+use React\EventLoop\Factory;
+use ReactParallel\EventLoop\EventLoopBridge;
+use ReactParallel\EventLoop\Metrics as EventLoopMetrics;
+use ReactParallel\Pool\Infinite\Infinite;
+use ReactParallel\Pool\Infinite\Metrics;
+use WyriHaximus\Metrics\Configuration;
+use WyriHaximus\Metrics\InMemory\Registry;
+
+$loop = Factory::create();
+$registry = new Registry(Configuration::create());
+$eventLoopBridge = (new EventLoopBridge($loop))->withMetrics(EventLoopMetrics::create($registry));
+$finite = (new Infinite($loop, $eventLoopBridge, 1.3))->withMetrics(Metrics::create($registry));
+```
+
 ## License ##
 
 Copyright 2020 [Cees-Jan Kiewiet](http://wyrihaximus.net/)

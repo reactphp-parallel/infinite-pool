@@ -14,6 +14,7 @@ use ReactParallel\Contracts\GroupInterface;
 use ReactParallel\Contracts\LowLevelPoolInterface;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Runtime\Runtime;
+use WyriHaximus\Metrics\Label;
 use WyriHaximus\PoolInfo\Info;
 
 use function array_key_exists;
@@ -22,6 +23,7 @@ use function assert;
 use function count;
 use function dirname;
 use function file_exists;
+use function hrtime;
 use function is_string;
 use function React\Promise\reject;
 use function spl_object_hash;
@@ -51,6 +53,8 @@ final class Infinite implements LowLevelPoolInterface
 
     private float $ttl;
 
+    private ?Metrics $metrics = null;
+
     /** @var GroupInterface[] */
     private array $groups = [];
 
@@ -71,6 +75,14 @@ final class Infinite implements LowLevelPoolInterface
         $this->eventLoopBridge = $eventLoopBridge;
     }
 
+    public function withMetrics(Metrics $metrics): self
+    {
+        $self          = clone $this;
+        $self->metrics = $metrics;
+
+        return $self;
+    }
+
     /**
      * @param mixed[] $args
      */
@@ -89,8 +101,21 @@ final class Infinite implements LowLevelPoolInterface
 
             $resolve($this->getIdleRuntime());
         }))->then(function (Runtime $runtime) use ($callable, $args): PromiseInterface {
+            $time = null;
+            if ($this->metrics instanceof Metrics) {
+                $this->metrics->threads()->gauge(new Label('state', 'busy'))->incr();
+                $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
+                $time = hrtime(true);
+            }
+
             /** @psalm-suppress UndefinedInterfaceMethod */
-            return $runtime->run($callable, $args)->always(function () use ($runtime): void {
+            return $runtime->run($callable, $args)->always(function () use ($runtime, $time): void {
+                if ($this->metrics instanceof Metrics) {
+                    $this->metrics->executionTime()->summary()->observe((hrtime(true) - $time) / 1e+9);
+                    $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
+                    $this->metrics->threads()->gauge(new Label('state', 'busy'))->dcr();
+                }
+
                 if ($this->ttl >= 0.1) {
                     $this->addRuntimeToIdleList($runtime);
                     $this->startTtlTimer($runtime);
@@ -182,6 +207,10 @@ final class Infinite implements LowLevelPoolInterface
         $runtime                                   = new Runtime($this->eventLoopBridge, $this->autoload);
         $this->runtimes[spl_object_hash($runtime)] = $runtime;
 
+        if ($this->metrics instanceof Metrics) {
+            $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
+        }
+
         return $runtime;
     }
 
@@ -203,6 +232,10 @@ final class Infinite implements LowLevelPoolInterface
 
         if (array_key_exists($hash, $this->idleRuntimes)) {
             unset($this->idleRuntimes[$hash]);
+        }
+
+        if ($this->metrics instanceof Metrics) {
+            $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
         }
 
         if (! array_key_exists($hash, $this->ttlTimers)) {
