@@ -1,10 +1,9 @@
 parameters:
 	checkMissingIterableValueType: false
 	ignoreErrors:
-	    - '#Function sleep is unsafe to use.#'
-	    - '#Do not throw the \\Exception base class. Instead, extend the \\Exception base class.#'
+	    - '#Call to an undefined method React\\Promise\\PromiseInterface::always\(\).#'
 	ergebnis:
 		classesAllowedToBeExtended:
-			- Exception
+			- ReactParallel\Tests\AbstractPoolTest
 includes:
 	- ../../vendor/wyrihaximus/async-test-utilities/rules.neon

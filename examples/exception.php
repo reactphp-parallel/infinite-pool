@@ -1,13 +1,14 @@
 <?php
 
 use React\EventLoop\Factory;
-use WyriHaximus\React\Parallel\Infinite;
+use ReactParallel\EventLoop\EventLoopBridge;
+use ReactParallel\Pool\Infinite\Infinite;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 $loop = Factory::create();
 
-$finite = new Infinite($loop, 1);
+$infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
 
 $finite->run(function () {
     throw new RuntimeException('Whoops I did it again!');
