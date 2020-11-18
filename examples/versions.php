@@ -3,26 +3,24 @@
 
 use PackageVersions\Versions;
 use React\EventLoop\Factory;
-use WyriHaximus\React\Parallel\Infinite;
+use ReactParallel\EventLoop\EventLoopBridge;
+use ReactParallel\Pool\Infinite\Infinite;
 use function WyriHaximus\iteratorOrArrayToArray;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 $loop = Factory::create();
 
-$finite = new Infinite($loop, 0.1);
+$finite = new Infinite($loop, new EventLoopBridge($loop), 0.1);
 
-$timer = $loop->addPeriodicTimer(1, function () use ($finite) {
-    var_export(iteratorOrArrayToArray($finite->info()));
+$loop->addTimer(1, function () use ($finite) {
+    $finite->kill();
 });
-$finite->run(function () {
+$finite->run(function (): array {
     return Versions::VERSIONS;
-})->then(function ($versions) use ($finite, $loop, $timer) {
+})->then(function (array $versions): void {
     var_export($versions);
-
-    $finite->close();
-    $loop->cancelTimer($timer);
-})->done();
+});
 
 echo 'Loop::run()', PHP_EOL;
 $loop->run();

@@ -27,9 +27,13 @@ use function React\Promise\reject;
 use function spl_object_hash;
 
 use const DIRECTORY_SEPARATOR;
+use const WyriHaximus\Constants\Boolean\FALSE_;
+use const WyriHaximus\Constants\Boolean\TRUE_;
 
 final class Infinite implements LowLevelPoolInterface
 {
+    private const AUTOLOADER_LEVELS = [2, 5];
+
     private LoopInterface $loop;
 
     /** @var Runtime[] */
@@ -50,14 +54,14 @@ final class Infinite implements LowLevelPoolInterface
     /** @var GroupInterface[] */
     private array $groups = [];
 
-    private bool $closed = false;
+    private bool $closed = FALSE_;
 
     public function __construct(LoopInterface $loop, EventLoopBridge $eventLoopBridge, float $ttl)
     {
         $this->loop     = $loop;
         $this->ttl      = $ttl;
         $this->autoload = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-        foreach ([2, 5] as $level) {
+        foreach (self::AUTOLOADER_LEVELS as $level) {
             $this->autoload = dirname(__FILE__, $level) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
             if (file_exists($this->autoload)) {
                 break;
@@ -72,7 +76,7 @@ final class Infinite implements LowLevelPoolInterface
      */
     public function run(Closure $callable, array $args = []): PromiseInterface
     {
-        if ($this->closed === true) {
+        if ($this->closed === TRUE_) {
             return reject(ClosedException::create());
         }
 
@@ -102,31 +106,31 @@ final class Infinite implements LowLevelPoolInterface
     public function close(): bool
     {
         if (count($this->groups) > 0) {
-            return false;
+            return FALSE_;
         }
 
-        $this->closed = true;
+        $this->closed = TRUE_;
 
         foreach ($this->runtimes as $hash => $runtime) {
             $this->closeRuntime($hash);
         }
 
-        return true;
+        return TRUE_;
     }
 
     public function kill(): bool
     {
         if (count($this->groups) > 0) {
-            return false;
+            return FALSE_;
         }
 
-        $this->closed = true;
+        $this->closed = TRUE_;
 
         foreach ($this->runtimes as $runtime) {
             $runtime->kill();
         }
 
-        return true;
+        return TRUE_;
     }
 
     /**
