@@ -12,9 +12,10 @@ $infinite->run(function () {
     sleep(1);
 
     return 'Hoi!';
-})->then(function (string $message) use ($infinite) {
+})->then(function (string $message) use ($infinite, $loop) {
     echo $message, PHP_EOL;
     $infinite->close();
+    $loop->stop();
 });
 
 echo 'Loop::run()', PHP_EOL;

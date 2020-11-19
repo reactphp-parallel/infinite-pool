@@ -1,8 +1,9 @@
 <?php
 
-
 use React\EventLoop\Factory;
-use WyriHaximus\React\Parallel\Infinite;
+use ReactParallel\EventLoop\EventLoopBridge;
+use ReactParallel\Pool\Infinite\Infinite;
+
 use function React\Promise\all;
 use function WyriHaximus\iteratorOrArrayToArray;
 
@@ -10,15 +11,15 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR 
 
 $loop = Factory::create();
 
-$finite = new Infinite($loop, 0.1);
+$infinite = new Infinite($loop, new EventLoopBridge($loop), 0.1);
 
-$timer = $loop->addPeriodicTimer(1, function () use ($finite) {
-    var_export(iteratorOrArrayToArray($finite->info()));
+$timer = $loop->addPeriodicTimer(1, function () use ($infinite) {
+    var_export(iteratorOrArrayToArray($infinite->info()));
 });
 
 $promises = [];
 foreach (range(0, 250) as $i) {
-    $promises[] = $finite->run(function($sleep) {
+    $promises[] = $infinite->run(function($sleep) {
         sleep($sleep);
         return $sleep;
     }, [random_int(1, 13)])->then(function (int $sleep) use ($i) {
@@ -28,14 +29,15 @@ foreach (range(0, 250) as $i) {
     });
 }
 
-$signalHandler = function () use ($finite, $loop) {
+$signalHandler = function () use ($infinite, $loop) {
     $loop->stop();
-    $finite->close();
+    $infinite->close();
 };
-all($promises)->then(function ($v) use ($finite, $loop, $signalHandler, $timer) {
-    $finite->close();
+all($promises)->then(function ($v) use ($infinite, $loop, $signalHandler, $timer) {
+    $infinite->close();
     $loop->removeSignal(SIGINT, $signalHandler);
     $loop->cancelTimer($timer);
+    $loop->stop();
 })->done();
 
 $loop->addSignal(SIGINT, $signalHandler);

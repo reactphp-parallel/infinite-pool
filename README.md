@@ -25,9 +25,13 @@ second before returning an message. Upon receiving that message the mean thread 
 closing the pool;
 
 ```php
+use React\EventLoop\Factory;
+use ReactParallel\EventLoop\EventLoopBridge;
+use ReactParallel\Pool\Infinite\Infinite;
+
 $loop = Factory::create();
-$finite = new Infinite($loop, 1);
-$finite->run(function () {
+$infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
+$infinite->run(function () {
     sleep(1);
 
     return 'Hoi!';
@@ -40,7 +44,7 @@ $loop->run();
 
 ## License ##
 
-Copyright 2019 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
+Copyright 2020 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
