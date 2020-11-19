@@ -20,8 +20,8 @@
         "react/promise": "^2.7",
         "wyrihaximus/async-test-utilities": "^3.2",
         "wyrihaximus/constants": "^1.5",
-        "wyrihaximus/pool-info": "^1.0",
-        "wyrihaximus/ticking-promise": "^1.6"
+        "wyrihaximus/metrics": "^1.0",
+        "wyrihaximus/pool-info": "^1.0"
     },
     "require-dev": {
         "bruli/php-value-objects": "^2.0",

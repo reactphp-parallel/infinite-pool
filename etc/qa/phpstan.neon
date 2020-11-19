@@ -2,6 +2,7 @@ parameters:
 	checkMissingIterableValueType: false
 	ignoreErrors:
 	    - '#Call to an undefined method React\\Promise\\PromiseInterface::always\(\).#'
+	    - '#Only numeric types are allowed in -, float\|int\|null given on the right side.#'
 	ergebnis:
 		classesAllowedToBeExtended:
 			- ReactParallel\Tests\AbstractPoolTest

@@ -2,12 +2,14 @@
 
 namespace ReactParallel\Tests\Pool\Infinite;
 
+use WyriHaximus\Metrics\Factory as MetricsFactory;
 use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Promise\PromiseInterface;
 use ReactParallel\Contracts\PoolInterface;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
+use ReactParallel\Pool\Infinite\Metrics;
 use ReactParallel\Tests\AbstractPoolTest;
 use WyriHaximus\PoolInfo\Info;
 use WyriHaximus\PoolInfo\PoolInfoInterface;
@@ -28,7 +30,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function withAZeroTTLThreadsShouldBeKilledOffImmidetally(): void
     {
         $loop = Factory::create();
-        $pool = new Infinite($loop, new EventLoopBridge($loop), 0.0);
+        $pool = $pool = (new Infinite($loop, new EventLoopBridge($loop), 0.0))->withMetrics(Metrics::create(MetricsFactory::create()));
 
         self::assertSame([
             Info::TOTAL => 0,
@@ -74,7 +76,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function withAnAlmostZeroTTLThreadsShouldNotBeKilledOffImmidetally(): void
     {
         $loop = Factory::create();
-        $pool = new Infinite($loop, new EventLoopBridge($loop), 5);
+        $pool = $pool = (new Infinite($loop, new EventLoopBridge($loop), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
 
         self::assertSame([
             Info::TOTAL => 0,
@@ -141,12 +143,12 @@ final class InfiniteTest extends AbstractPoolTest
     private function poolFactory(): PoolInfoInterface
     {
         $loop = Factory::create();
-        return new Infinite($loop, new EventLoopBridge($loop), 5);
+        return $pool = (new Infinite($loop, new EventLoopBridge($loop), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
     }
 
     protected function createPool(LoopInterface $loop): PoolInterface
     {
-        return new Infinite($loop, new EventLoopBridge($loop), 5);
+        return $pool = (new Infinite($loop, new EventLoopBridge($loop), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
     }
 
     /**
@@ -155,7 +157,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function aquireLock(): void
     {
         $loop = Factory::create();
-        $pool = new Infinite($loop, new EventLoopBridge($loop), 5);
+        $pool = (new Infinite($loop, new EventLoopBridge($loop), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
 
         $group = $pool->acquireGroup();
         self::assertFalse($pool->close());
