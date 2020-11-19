@@ -10,12 +10,13 @@ $loop = Factory::create();
 
 $infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
 
-$finite->run(function () {
+$infinite->run(function () {
     throw new RuntimeException('Whoops I did it again!');
 
     return 'We shouldn\'t reach this!';
-})->always(function () use ($finite) {
-    $finite->close();
+})->always(function () use ($infinite, $loop) {
+    $infinite->close();
+    $loop->stop();
 })->then(function (string $oops) {
     echo $oops, PHP_EOL;
 }, function (Throwable $error) {

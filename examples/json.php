@@ -15,14 +15,14 @@ $loop = Factory::create();
 $infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
 
 $promises = [];
-$signalHandler = function () use ($finite, $loop) {
+$signalHandler = function () use ($infinite, $loop) {
     $loop->stop();
-    $finite->close();
+    $infinite->close();
 };
 
-$tick = function () use (&$promises, $finite, $loop, $signalHandler, $json, &$tick) {
+$tick = function () use (&$promises, $infinite, $loop, $signalHandler, $json, &$tick) {
     if (count($promises) < 1000) {
-        $promises[] = $finite->run(function($json) {
+        $promises[] = $infinite->run(function($json) {
             $json = json_decode($json, true);
             return md5(json_encode($json));
         }, [$json]);
@@ -32,9 +32,10 @@ $tick = function () use (&$promises, $finite, $loop, $signalHandler, $json, &$ti
 
     all($promises)->then(function ($v) {
         var_export($v);
-    })->always(function () use ($finite, $loop, $signalHandler) {
-        $finite->close();
+    })->always(function () use ($infinite, $loop, $signalHandler) {
+        $infinite->close();
         $loop->removeSignal(SIGINT, $signalHandler);
+        $loop->stop();
     })->done();
 
 };
