@@ -13,7 +13,7 @@
         "php": "^7.4",
         "ext-parallel": "*",
         "react-parallel/contracts": "^1.0",
-        "react-parallel/event-loop": "^1.0",
+        "react-parallel/event-loop": "^1.2",
         "react-parallel/runtime": "^2.0",
         "react/event-loop": "^1.1",
         "react/promise": "^2.7",
