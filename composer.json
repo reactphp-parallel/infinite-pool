@@ -15,7 +15,7 @@
         "react-parallel/contracts": "^1.0",
         "react-parallel/event-loop": "^1.2",
         "react-parallel/runtime": "^2.0",
-        "react/event-loop": "^1.1",
+        "react/event-loop": "^1.2",
         "react/promise": "^2.7",
         "wyrihaximus/constants": "^1.6",
         "wyrihaximus/metrics": "^1.0",
