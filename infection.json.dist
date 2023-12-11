@@ -12,8 +12,7 @@
         "perMutator": "./var/infection-per-mutator.md"
     },
     "mutators": {
-        "@default": true,
-        "MethodCallRemoval": false
+        "@default": true
     },
     "phpUnit": {
         "configDir": "./etc/qa/"

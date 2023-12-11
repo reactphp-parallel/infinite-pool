@@ -1,10 +1,15 @@
 parameters:
-	checkMissingIterableValueType: false
-	ignoreErrors:
-	    - '#Call to an undefined method React\\Promise\\PromiseInterface::always\(\).#'
-	    - '#Only numeric types are allowed in -, float\|int\|null given on the right side.#'
+	level: max
 	ergebnis:
-		classesAllowedToBeExtended:
-			- ReactParallel\Tests\AbstractPoolTest
+		noExtends:
+			classesAllowedToBeExtended:
+				- ReactParallel\EventLoop\CancelledException
+				- ReactParallel\EventLoop\CanceledFuture
+				- ReactParallel\EventLoop\KilledRuntime
+#	stubFiles:
+#		- ../../stubs/Event.stub
+#		- ../../stubs/Future.stub
+#		- ../../stubs/Channel.stub
+
 includes:
 	- ../../vendor/wyrihaximus/async-test-utilities/rules.neon

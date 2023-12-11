@@ -2,9 +2,9 @@
   "symbol-whitelist" : [
     "null", "true", "false",
     "static", "self", "parent",
-    "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object",
-    "WyriHaximus\\Constants\\ComposerAutoloader\\LOCATION", "WyriHaximus\\Constants\\Boolean\\FALSE_",
-    "WyriHaximus\\Constants\\Boolean\\TRUE_", "WyriHaximus\\Constants\\Numeric\\ZERO"
+    "array", "string", "int", "float", "bool", "iterable", "callable", "void", "object", "mixed",
+    "futurePromise", "WyriHaximus\\Constants\\ComposerAutoloader\\LOCATION",
+    "WyriHaximus\\Constants\\Boolean\\FALSE_", "WyriHaximus\\Constants\\Boolean\\TRUE_"
   ],
   "php-core-extensions" : [
     "Core",

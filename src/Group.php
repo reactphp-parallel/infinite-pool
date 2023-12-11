@@ -13,11 +13,8 @@ final class Group implements GroupInterface
 {
     private const BYTES = 16;
 
-    private string $id;
-
-    private function __construct(string $id)
+    private function __construct(private string $id)
     {
-        $this->id = $id;
     }
 
     public static function create(): self

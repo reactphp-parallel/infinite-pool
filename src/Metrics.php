@@ -10,15 +10,10 @@ use WyriHaximus\Metrics\Registry;
 
 final class Metrics
 {
-    private Registry\Gauges $threads;
-    private Registry\Summaries $executionTime;
-
     public function __construct(
-        Registry\Gauges $threads,
-        Registry\Summaries $executionTime
+        private Registry\Gauges $threads,
+        private Registry\Summaries $executionTime,
     ) {
-        $this->threads       = $threads;
-        $this->executionTime = $executionTime;
     }
 
     public static function create(Registry $registry): self
@@ -27,12 +22,12 @@ final class Metrics
             $registry->gauge(
                 'react_parallel_pool_infinite_threads',
                 'Currently active or idle thread count',
-                new Name('state')
+                new Name('state'),
             ),
             $registry->summary(
                 'react_parallel_pool_infinite_execution_time',
                 'Thread call execution time',
-                MetricsFactory::defaultQuantiles()
+                MetricsFactory::defaultQuantiles(),
             ),
         );
     }
