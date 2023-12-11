@@ -13,9 +13,9 @@
         "php": "^8.2",
         "ext-parallel": "*",
         "ext-random": "*",
-        "react-parallel/contracts": "dev-master as 2.0",
-        "react-parallel/event-loop": "dev-master as 2.0",
-        "react-parallel/runtime": "dev-master as 3.0",
+        "react-parallel/contracts": "^2@dev",
+        "react-parallel/event-loop": "^2@dev",
+        "react-parallel/runtime": "^3@dev",
         "react/event-loop": "^1.5",
         "react/promise": "^3.1",
         "thecodingmachine/safe": "^2.5",
@@ -25,7 +25,7 @@
     },
     "require-dev": {
         "moneyphp/money": "^3.2",
-        "react-parallel/pool-tests": "dev-PHP-8.2-PLUS as 4.0",
+        "react-parallel/pool-tests": "^4@dev",
         "wyrihaximus/async-test-utilities": "^7.2"
     },
     "autoload": {
