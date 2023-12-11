@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace ReactParallel\Pool\Infinite;
 
 use Closure;
-use React\EventLoop\LoopInterface;
+use React\EventLoop\Loop;
 use React\EventLoop\TimerInterface;
 use React\Promise\Promise;
 use React\Promise\PromiseInterface;
@@ -23,10 +23,10 @@ use function assert;
 use function count;
 use function dirname;
 use function file_exists;
-use function hrtime;
-use function is_string;
+use function is_int;
 use function React\Promise\reject;
-use function spl_object_hash;
+use function Safe\hrtime;
+use function spl_object_id;
 
 use const DIRECTORY_SEPARATOR;
 use const WyriHaximus\Constants\Boolean\FALSE_;
@@ -35,8 +35,6 @@ use const WyriHaximus\Constants\Boolean\TRUE_;
 final class Infinite implements LowLevelPoolInterface
 {
     private const AUTOLOADER_LEVELS = [2, 5];
-
-    private LoopInterface $loop;
 
     /** @var Runtime[] */
     private array $runtimes = [];
@@ -47,23 +45,17 @@ final class Infinite implements LowLevelPoolInterface
     /** @var TimerInterface[] */
     private array $ttlTimers = [];
 
-    private EventLoopBridge $eventLoopBridge;
-
     private string $autoload;
 
-    private float $ttl;
-
-    private ?Metrics $metrics = null;
+    private Metrics|null $metrics = null;
 
     /** @var GroupInterface[] */
     private array $groups = [];
 
     private bool $closed = FALSE_;
 
-    public function __construct(LoopInterface $loop, EventLoopBridge $eventLoopBridge, float $ttl)
+    public function __construct(private EventLoopBridge $eventLoopBridge, private float $ttl)
     {
-        $this->loop     = $loop;
-        $this->ttl      = $ttl;
         $this->autoload = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
         foreach (self::AUTOLOADER_LEVELS as $level) {
             $this->autoload = dirname(__FILE__, $level) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
@@ -71,8 +63,6 @@ final class Infinite implements LowLevelPoolInterface
                 break;
             }
         }
-
-        $this->eventLoopBridge = $eventLoopBridge;
     }
 
     public function withMetrics(Metrics $metrics): self
@@ -83,9 +73,7 @@ final class Infinite implements LowLevelPoolInterface
         return $self;
     }
 
-    /**
-     * @param mixed[] $args
-     */
+    /** @param mixed[] $args */
     public function run(Closure $callable, array $args = []): PromiseInterface
     {
         if ($this->closed === TRUE_) {
@@ -123,7 +111,7 @@ final class Infinite implements LowLevelPoolInterface
                     return;
                 }
 
-                $this->closeRuntime(spl_object_hash($runtime));
+                $this->closeRuntime(spl_object_id($runtime));
             });
         });
     }
@@ -158,9 +146,7 @@ final class Infinite implements LowLevelPoolInterface
         return TRUE_;
     }
 
-    /**
-     * @return iterable<string, int>
-     */
+    /** @return iterable<string, int> */
     public function info(): iterable
     {
         yield Info::TOTAL => count($this->runtimes);
@@ -186,10 +172,10 @@ final class Infinite implements LowLevelPoolInterface
     private function getIdleRuntime(): Runtime
     {
         $hash = array_pop($this->idleRuntimes);
-        assert(is_string($hash));
+        assert(is_int($hash));
 
         if (array_key_exists($hash, $this->ttlTimers)) {
-            $this->loop->cancelTimer($this->ttlTimers[$hash]);
+            Loop::cancelTimer($this->ttlTimers[$hash]);
             unset($this->ttlTimers[$hash]);
         }
 
@@ -198,14 +184,14 @@ final class Infinite implements LowLevelPoolInterface
 
     private function addRuntimeToIdleList(Runtime $runtime): void
     {
-        $hash                      = spl_object_hash($runtime);
+        $hash                      = spl_object_id($runtime);
         $this->idleRuntimes[$hash] = $hash;
     }
 
     private function spawnRuntime(): Runtime
     {
-        $runtime                                   = new Runtime($this->eventLoopBridge, $this->autoload);
-        $this->runtimes[spl_object_hash($runtime)] = $runtime;
+        $runtime                                 = new Runtime($this->eventLoopBridge, $this->autoload);
+        $this->runtimes[spl_object_id($runtime)] = $runtime;
 
         if ($this->metrics instanceof Metrics) {
             $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
@@ -216,14 +202,14 @@ final class Infinite implements LowLevelPoolInterface
 
     private function startTtlTimer(Runtime $runtime): void
     {
-        $hash = spl_object_hash($runtime);
+        $hash = spl_object_id($runtime);
 
-        $this->ttlTimers[$hash] = $this->loop->addTimer($this->ttl, function () use ($hash): void {
+        $this->ttlTimers[$hash] = Loop::addTimer($this->ttl, function () use ($hash): void {
             $this->closeRuntime($hash);
         });
     }
 
-    private function closeRuntime(string $hash): void
+    private function closeRuntime(int $hash): void
     {
         $runtime = $this->runtimes[$hash];
         $runtime->close();
@@ -242,7 +228,7 @@ final class Infinite implements LowLevelPoolInterface
             return;
         }
 
-        $this->loop->cancelTimer($this->ttlTimers[$hash]);
+        Loop::cancelTimer($this->ttlTimers[$hash]);
 
         unset($this->ttlTimers[$hash]);
     }
