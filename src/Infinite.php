@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace ReactParallel\Pool\Infinite;
 
 use Closure;
+use parallel\Runtime\Error\Closed;
 use React\EventLoop\Loop;
 use React\EventLoop\TimerInterface;
-use React\Promise\Promise;
-use React\Promise\PromiseInterface;
 use ReactParallel\Contracts\ClosedException;
 use ReactParallel\Contracts\GroupInterface;
 use ReactParallel\Contracts\LowLevelPoolInterface;
@@ -24,7 +23,6 @@ use function count;
 use function dirname;
 use function file_exists;
 use function is_int;
-use function React\Promise\reject;
 use function Safe\hrtime;
 use function spl_object_id;
 
@@ -39,7 +37,7 @@ final class Infinite implements LowLevelPoolInterface
     /** @var Runtime[] */
     private array $runtimes = [];
 
-    /** @var string[] */
+    /** @var int[] */
     private array $idleRuntimes = [];
 
     /** @var TimerInterface[] */
@@ -73,47 +71,49 @@ final class Infinite implements LowLevelPoolInterface
         return $self;
     }
 
-    /** @param mixed[] $args */
-    public function run(Closure $callable, array $args = []): PromiseInterface
+    /**
+     * @param (Closure():T) $callable
+     * @param array<mixed>  $args
+     *
+     * @return T
+     *
+     * @template T
+     */
+    public function run(Closure $callable, array $args = []): mixed
     {
         if ($this->closed === TRUE_) {
-            return reject(ClosedException::create());
+            throw ClosedException::create();
         }
 
-        return (new Promise(function (callable $resolve, callable $reject): void {
-            if (count($this->idleRuntimes) === 0) {
-                $resolve($this->spawnRuntime());
+        if (count($this->idleRuntimes) === 0) {
+            $runtime = $this->spawnRuntime();
+        } else {
+            $runtime = $this->getIdleRuntime();
+        }
 
-                return;
-            }
+        $time = null;
+        if ($this->metrics instanceof Metrics) {
+            $this->metrics->threads()->gauge(new Label('state', 'busy'))->incr();
+            $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
+            $time = hrtime(true);
+        }
 
-            $resolve($this->getIdleRuntime());
-        }))->then(function (Runtime $runtime) use ($callable, $args): PromiseInterface {
-            $time = null;
+        try {
+            return $runtime->run($callable, $args);
+        } finally {
             if ($this->metrics instanceof Metrics) {
-                $this->metrics->threads()->gauge(new Label('state', 'busy'))->incr();
-                $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
-                $time = hrtime(true);
+                $this->metrics->executionTime()->summary()->observe((hrtime(true) - $time) / 1e+9); /** @phpstan-ignore-line */
+                $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
+                $this->metrics->threads()->gauge(new Label('state', 'busy'))->dcr();
             }
 
-            /** @psalm-suppress UndefinedInterfaceMethod */
-            return $runtime->run($callable, $args)->always(function () use ($runtime, $time): void {
-                if ($this->metrics instanceof Metrics) {
-                    $this->metrics->executionTime()->summary()->observe((hrtime(true) - $time) / 1e+9);
-                    $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
-                    $this->metrics->threads()->gauge(new Label('state', 'busy'))->dcr();
-                }
-
-                if ($this->ttl >= 0.1) {
-                    $this->addRuntimeToIdleList($runtime);
-                    $this->startTtlTimer($runtime);
-
-                    return;
-                }
-
+            if ($this->ttl >= 0.1) {
+                $this->addRuntimeToIdleList($runtime);
+                $this->startTtlTimer($runtime);
+            } else {
                 $this->closeRuntime(spl_object_id($runtime));
-            });
-        });
+            }
+        }
     }
 
     public function close(): bool
@@ -212,7 +212,11 @@ final class Infinite implements LowLevelPoolInterface
     private function closeRuntime(int $hash): void
     {
         $runtime = $this->runtimes[$hash];
-        $runtime->close();
+        try {
+            $runtime->close();
+        } catch (Closed) {
+            // @ignoreException
+        }
 
         unset($this->runtimes[$hash]);
 
