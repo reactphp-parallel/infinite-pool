@@ -24,7 +24,7 @@
         "wyrihaximus/pool-info": "^2.0"
     },
     "require-dev": {
-        "moneyphp/money": "^3.2",
+        "moneyphp/money": "^3.2 || ^4.0",
         "react-parallel/pool-tests": "^4@dev",
         "wyrihaximus/async-test-utilities": "^7.2"
     },
