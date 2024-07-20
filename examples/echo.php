@@ -1,23 +1,17 @@
 <?php
 
-use React\EventLoop\Factory;
+declare(strict_types=1);
+
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-$loop = Factory::create();
-$infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
-$infinite->run(function () {
+$infinite = new Infinite(new EventLoopBridge(), 1);
+echo $infinite->run(static function (): string {
     sleep(1);
 
     return 'Hoi!';
-})->then(function (string $message) use ($infinite, $loop) {
-    echo $message, PHP_EOL;
-    $infinite->close();
-    $loop->stop();
-});
+}), PHP_EOL;
 
-echo 'Loop::run()', PHP_EOL;
-$loop->run();
-echo 'Loop::done()', PHP_EOL;
+$infinite->close();

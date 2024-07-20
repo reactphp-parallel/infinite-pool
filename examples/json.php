@@ -1,48 +1,48 @@
 <?php
 
+declare(strict_types=1);
 
-use React\EventLoop\Factory;
+use React\EventLoop\Loop;
 use ReactParallel\EventLoop\EventLoopBridge;
+
+use function React\Async\async;
+use function React\Async\await;
 use function React\Promise\all;
-use ReactParallel\Pool\Infinite\Infinite;
 
 $json = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'large.json');
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-$loop = Factory::create();
+$infinite = new Infinite(new EventLoopBridge(), 1);
 
-$infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
-
-$promises = [];
-$signalHandler = function () use ($infinite, $loop) {
-    $loop->stop();
+$promises      = [];
+$signalHandler = static function () use ($infinite): void {
+    Loop::stop();
     $infinite->close();
 };
 
-$tick = function () use (&$promises, $infinite, $loop, $signalHandler, $json, &$tick) {
+$tick = async(static function () use (&$promises, $infinite, $signalHandler, $json, &$tick): void {
     if (count($promises) < 1000) {
-        $promises[] = $infinite->run(function($json) {
+        $promises[] = async(static fn (string $json): string => $infinite->run(static function ($json): string {
             $json = json_decode($json, true);
+
             return md5(json_encode($json));
-        }, [$json]);
-        $loop->futureTick($tick);
+        }, [$json]))($json);
+        Loop::futureTick($tick);
+
         return;
     }
 
-    all($promises)->then(function ($v) {
-        var_export($v);
-    })->always(function () use ($infinite, $loop, $signalHandler) {
+    try {
+        var_export(await(all($promises)));
+    } finally {
         $infinite->close();
-        $loop->removeSignal(SIGINT, $signalHandler);
-        $loop->stop();
-    })->done();
+        Loop::removeSignal(SIGINT, $signalHandler);
+        Loop::stop();
+    }
+});
 
-};
-$loop->futureTick($tick);
-
-$loop->addSignal(SIGINT, $signalHandler);
+Loop::futureTick($tick);
+Loop::addSignal(SIGINT, $signalHandler);
 
 echo 'Loop::run()', PHP_EOL;
-$loop->run();
-echo 'Loop::done()', PHP_EOL;
