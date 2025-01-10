@@ -20,20 +20,15 @@ use function array_key_exists;
 use function array_pop;
 use function assert;
 use function count;
-use function dirname;
-use function file_exists;
 use function is_int;
 use function Safe\hrtime;
 use function spl_object_id;
 
-use const DIRECTORY_SEPARATOR;
 use const WyriHaximus\Constants\Boolean\FALSE_;
 use const WyriHaximus\Constants\Boolean\TRUE_;
 
 final class Infinite implements LowLevelPoolInterface
 {
-    private const AUTOLOADER_LEVELS = [2, 5];
-
     /** @var Runtime[] */
     private array $runtimes = [];
 
@@ -42,8 +37,6 @@ final class Infinite implements LowLevelPoolInterface
 
     /** @var TimerInterface[] */
     private array $ttlTimers = [];
-
-    private string $autoload;
 
     private Metrics|null $metrics = null;
 
@@ -54,13 +47,6 @@ final class Infinite implements LowLevelPoolInterface
 
     public function __construct(private EventLoopBridge $eventLoopBridge, private float $ttl)
     {
-        $this->autoload = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-        foreach (self::AUTOLOADER_LEVELS as $level) {
-            $this->autoload = dirname(__FILE__, $level) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
-            if (file_exists($this->autoload)) {
-                break;
-            }
-        }
     }
 
     public function withMetrics(Metrics $metrics): self
@@ -72,12 +58,7 @@ final class Infinite implements LowLevelPoolInterface
     }
 
     /**
-     * @param (Closure():T) $callable
-     * @param array<mixed>  $args
-     *
-     * @return T
-     *
-     * @template T
+     * {@inheritDoc}
      */
     public function run(Closure $callable, array $args = []): mixed
     {
@@ -99,7 +80,10 @@ final class Infinite implements LowLevelPoolInterface
         }
 
         try {
-            return $runtime->run($callable, $args);
+            return $runtime->run(
+                $callable,
+                $args,
+            );
         } finally {
             if ($this->metrics instanceof Metrics) {
                 $this->metrics->executionTime()->summary()->observe((hrtime(true) - $time) / 1e+9); /** @phpstan-ignore-line */
@@ -146,7 +130,9 @@ final class Infinite implements LowLevelPoolInterface
         return TRUE_;
     }
 
-    /** @return iterable<string, int> */
+    /**
+     * {@inheritDoc}
+     */
     public function info(): iterable
     {
         yield Info::TOTAL => count($this->runtimes);
@@ -190,7 +176,7 @@ final class Infinite implements LowLevelPoolInterface
 
     private function spawnRuntime(): Runtime
     {
-        $runtime                                 = new Runtime($this->eventLoopBridge, $this->autoload);
+        $runtime                                 = Runtime::create($this->eventLoopBridge);
         $this->runtimes[spl_object_id($runtime)] = $runtime;
 
         if ($this->metrics instanceof Metrics) {

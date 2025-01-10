@@ -5,21 +5,23 @@ declare(strict_types=1);
 namespace ReactParallel\Tests\Pool\Infinite;
 
 use React\EventLoop\Loop;
-//use ReactParallel\Contracts\PoolInterface;
+use ReactParallel\Contracts\PoolInterface;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 use ReactParallel\Pool\Infinite\Metrics;
-//use ReactParallel\Tests\AbstractPoolTest;
-use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
+use ReactParallel\Tests\AbstractPoolTest;
+//use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
 use WyriHaximus\Metrics\Factory as MetricsFactory;
 use WyriHaximus\PoolInfo\Info;
+use WyriHaximus\PoolInfo\PoolInfoInterface;
+use WyriHaximus\PoolInfo\PoolInfoTestTrait;
 
 use function sleep;
 
-//final class InfiniteTest extends AbstractPoolTest
-final class InfiniteTest extends AsyncTestCase
+final class InfiniteTest extends AbstractPoolTest
+//final class InfiniteTest extends AsyncTestCase
 {
-//    use PoolInfoTestTrait;
+    use PoolInfoTestTrait;
 
     /** @test */
     public function withAZeroTTLThreadsShouldBeKilledOffImmidetally(): void
@@ -127,28 +129,28 @@ final class InfiniteTest extends AsyncTestCase
         self::assertSame(42, $asteriks); /** @phpstan-ignore-line */
     }
 
-//    /** @phpstan-ignore-next-line */
-//    private function poolFactory(): PoolInfoInterface
-//    {
-//        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
-//    }
-//
-//    protected function createPool(): PoolInterface
-//    {
-//        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
-//    }
+    /** @phpstan-ignore-next-line */
+    private function poolFactory(): PoolInfoInterface
+    {
+        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+    }
 
-//    /** @test */
-//    public function aquireLock(): void
-//    {
-//        $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
-//
-//        $group = $pool->acquireGroup();
-//        self::assertFalse($pool->close());
-//        self::assertFalse($pool->kill());
-//
-//        $pool->releaseGroup($group);
-//        self::assertTrue($pool->close());
-//        self::assertTrue($pool->kill());
-//    }
+    protected function createPool(): PoolInterface
+    {
+        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+    }
+
+    /** @test */
+    public function aquireLock(): void
+    {
+        $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+
+        $group = $pool->acquireGroup();
+        self::assertFalse($pool->close());
+        self::assertFalse($pool->kill());
+
+        $pool->releaseGroup($group);
+        self::assertTrue($pool->close());
+        self::assertTrue($pool->kill());
+    }
 }

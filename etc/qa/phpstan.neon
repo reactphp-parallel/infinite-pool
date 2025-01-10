@@ -1,5 +1,15 @@
 parameters:
 	level: max
+	ignoreErrors:
+		-
+			message: '#Method ReactParallel\\Pool\\Infinite\\Infinite::run\(\) should return T\|null but returns T\|void\|null.#'
+			path: ../../src/Infinite.php
+		-
+			message: '#sleep blocks the event loop#'
+			path: ../../tests/InfiniteTest.php
+		-
+			message: '#sleep blocks the event loop#'
+			path: ../../tests/Types.php
 	ergebnis:
 		noExtends:
 			classesAllowedToBeExtended:
@@ -10,3 +20,4 @@ parameters:
 
 includes:
 	- ../../vendor/wyrihaximus/async-test-utilities/rules.neon
+	- ../../vendor/react-parallel/stubs/extension.neon

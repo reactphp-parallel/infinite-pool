@@ -9,15 +9,15 @@ use ReactParallel\Pool\Infinite\Infinite;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
-$finite = new Infinite(new EventLoopBridge(), 0.1);
+$infinite = new Infinite(new EventLoopBridge(), 0.1);
 
-Loop::addTimer(1, static function () use ($finite): void {
-    $finite->kill();
+Loop::addTimer(1, static function () use ($infinite): void {
+    $infinite->kill();
     Loop::stop();
 });
 
 var_export(
-    $finite->run(
+    $infinite->run(
         static fn (): array => array_merge(
             ...array_map(
                 static fn (string $package): array => [

@@ -12,20 +12,24 @@
     "require": {
         "php": "^8.1",
         "ext-parallel": "*",
-        "react-parallel/contracts": "^2@dev",
-        "react-parallel/event-loop": "^2@dev",
-        "react-parallel/runtime": "^3@dev",
+        "react-parallel/contracts": "^2.0.0",
+        "react-parallel/event-loop": "^2.0.0",
+        "react-parallel/runtime": "^3.0.0",
         "react/event-loop": "^1.5",
-        "react/promise": "^2.9 || ^3.1",
+        "react/promise": "^2.9 || ^3.2",
         "thecodingmachine/safe": "^2.5",
         "wyrihaximus/constants": "^1.6",
-        "wyrihaximus/metrics": "^2",
+        "wyrihaximus/metrics": "^2.1",
         "wyrihaximus/pool-info": "^1.1 || ^2.0"
     },
     "require-dev": {
         "moneyphp/money": "^3.2",
-        "react-parallel/pool-tests": "^4@dev",
-        "wyrihaximus/async-test-utilities": "^5 || ^7.2"
+        "react-parallel/pool-tests": "^4.0.0",
+        "react-parallel/stubs": "^1.2",
+        "wyrihaximus/async-test-utilities": "^5 || ^7.3"
+    },
+    "suggest": {
+        "ext-random": "More secure group names"
     },
     "autoload": {
         "psr-4": {

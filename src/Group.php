@@ -7,7 +7,10 @@ namespace ReactParallel\Pool\Infinite;
 use ReactParallel\Contracts\GroupInterface;
 
 use function bin2hex;
+use function function_exists;
+use function md5;
 use function random_bytes;
+use function spl_object_hash;
 
 final class Group implements GroupInterface
 {
@@ -19,7 +22,11 @@ final class Group implements GroupInterface
 
     public static function create(): self
     {
-        return new self(bin2hex(random_bytes(self::BYTES)));
+        if (function_exists('random_bytes')) {
+            return new self(bin2hex(random_bytes(self::BYTES)));
+        }
+
+        return new self(md5(spl_object_hash(new self('a'))));
     }
 
     public function __toString(): string

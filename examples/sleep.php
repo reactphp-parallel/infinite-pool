@@ -5,8 +5,10 @@ declare(strict_types=1);
 use React\EventLoop\Loop;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
+use ReactParallel\Pool\Limited\Limited;
 
 use function React\Async\async;
+use function React\Async\await;
 use function React\Promise\all;
 use function WyriHaximus\iteratorOrArrayToArray;
 
@@ -20,26 +22,28 @@ $timer = Loop::addPeriodicTimer(1, static function () use ($infinite): void {
 
 $promises = [];
 foreach (range(0, 250) as $i) {
-    $promises[] = async(static fn (int $i): int => $infinite->run(static function (int $sleep): int {
-        sleep($sleep);
+    $promises[] = async(static function (Infinite $infinite, int $i): int {
+        $sleep = $infinite->run(static function (int $sleep): int {
+            sleep($sleep);
 
-        return $sleep;
-    }, [random_int(1, 13)])->then(static function (int $sleep) use ($i): int {
+            return $sleep;
+        }, [random_int(1, 13)]);
+
         echo $i, '; ', $sleep, PHP_EOL;
 
         return $sleep;
-    }))($i);
+    })($infinite, $i);
 }
 
 $signalHandler = static function () use ($infinite): void {
-    Loop::stop();
     $infinite->close();
+    Loop::stop();
 };
-all($promises)->then(static function () use ($infinite, $signalHandler, $timer): void {
-    $infinite->close();
-    Loop::removeSignal(SIGINT, $signalHandler);
-    Loop::cancelTimer($timer);
-    Loop::stop();
-})->done();
 
 Loop::addSignal(SIGINT, $signalHandler);
+
+await(all($promises));
+
+$infinite->close();
+Loop::removeSignal(SIGINT, $signalHandler);
+Loop::cancelTimer($timer);
