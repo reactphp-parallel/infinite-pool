@@ -14,32 +14,30 @@ ReactPHP bindings around ext-parallel-infinite-pool
 To install via [Composer](http://getcomposer.org/), use the command below, it will automatically detect the latest version and bind it with `~`.
 
 ```
-composer require react-parallel/infinite-pool 
+composer require react-parallel/infinite-pool
 ```
 
 ## Usage ##
 
-The following example will spin up a thread with a 1 second TTL clean up policy. Meaning that threads are kept around 
-for 1 second waiting for something to do before closed. It then runs a closure in the thread that will wait for one 
-second before returning an message. Upon receiving that message the mean thread will echo out that message before 
+The following example will spin up a thread with a 1 second TTL clean up policy. Meaning that threads are kept around
+for 1 second waiting for something to do before closed. It then runs a closure in the thread that will wait for one
+second before returning an message. Upon receiving that message the mean thread will echo out that message before
 closing the pool;
 
 ```php
-use React\EventLoop\Factory;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 
-$loop = Factory::create();
-$infinite = new Infinite($loop, new EventLoopBridge($loop), 1);
-$infinite->run(function () {
-    sleep(1);
+$infinite = new Infinite(new EventLoopBridge(), 1);
 
-    return 'Hoi!';
-})->then(function (string $message) use ($infinite) {
-    echo $message, PHP_EOL;
+Loop::futureTick(async(static function () use ($infinite) {
+    echo $infinite->run(function () {
+        sleep(1);
+
+        return 'Hoi!';
+    }), PHP_EOL;
     $infinite->close();
 });
-$loop->run();
 ```
 
 ## Metrics
@@ -47,7 +45,6 @@ $loop->run();
 This package supports metrics through [`wyrihaximus/metrics`](https://github.com/wyrihaximus/php-metrics):
 
 ```php
-use React\EventLoop\Factory;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\EventLoop\Metrics as EventLoopMetrics;
 use ReactParallel\Pool\Infinite\Infinite;
@@ -55,15 +52,14 @@ use ReactParallel\Pool\Infinite\Metrics;
 use WyriHaximus\Metrics\Configuration;
 use WyriHaximus\Metrics\InMemory\Registry;
 
-$loop = Factory::create();
 $registry = new Registry(Configuration::create());
-$eventLoopBridge = (new EventLoopBridge($loop))->withMetrics(EventLoopMetrics::create($registry));
-$finite = (new Infinite($loop, $eventLoopBridge, 1.3))->withMetrics(Metrics::create($registry));
+$eventLoopBridge = (new EventLoopBridge())->withMetrics(EventLoopMetrics::create($registry));
+$infinite = (new Infinite($eventLoopBridge, 1.3))->withMetrics(Metrics::create($registry));
 ```
 
 ## License ##
 
-Copyright 2020 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
+Copyright 2025 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
