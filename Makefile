@@ -46,9 +46,6 @@ cs: ## Check the code for code style issues
 stan: ## Run static analysis (PHPStan)
 	$(DOCKER_RUN) vendor/bin/phpstan analyse src tests --ansi -c ./etc/qa/phpstan.neon
 
-psalm: ## Run static analysis (Psalm)
-	$(DOCKER_RUN) vendor/bin/psalm --threads=$(THREADS) --shepherd --stats --config=./etc/qa/psalm.xml
-
 unit-testing: ## Run tests
 	$(DOCKER_RUN) vendor/bin/phpunit --colors=always -c ./etc/qa/phpunit.xml --coverage-text --coverage-html ./var/tests-unit-coverage-html --coverage-clover ./var/tests-unit-clover-coverage.xml
 	$(DOCKER_RUN) test -n "$(COVERALLS_REPO_TOKEN)" && test -n "$(COVERALLS_RUN_LOCALLY)" && test -f ./var/tests-unit-clover-coverage.xml && vendor/bin/php-coveralls -v --coverage_clover ./build/logs/clover.xml --json_path ./var/tests-unit-clover-coverage-upload.json || true
@@ -78,12 +75,21 @@ backward-compatibility-check: ## Check code for backwards incompatible changes
 backward-compatibility-check-raw: ## Check code for backwards incompatible changes, doesn't ignore the failure ###
 	$(DOCKER_RUN) vendor/bin/roave-backward-compatibility-check
 
-shell: ## Provides Shell access in the expected environment ###
-	$(DOCKER_RUN) ash
+shell: ## Provides Shell access in the expected environment ####
+	$(DOCKER_RUN) bash
+
+install: ## Install dependencies ####
+	$(DOCKER_RUN) composer install
+
+update: ## Update dependencies ####
+	$(DOCKER_RUN) composer update -W
+
+outdated: ## Show outdated dependencies ####
+	$(DOCKER_RUN) composer outdated
 
 task-list-ci: ## CI: Generate a JSON array of jobs to run, matches the commands run when running `make (|all)` ###
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | grep -v "###" | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "%s\n", $$1}' | jq --raw-input --slurp -c 'split("\n")| .[0:-1]'
 
-help: ## Show this help ###
+help: ## Show this help ####
 	@printf "\033[33mUsage:\033[0m\n  make [target]\n\n\033[33mTargets:\033[0m\n"
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[32m%-32s\033[0m %s\n", $$1, $$2}' | tr -d '#'

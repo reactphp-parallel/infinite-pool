@@ -11,6 +11,7 @@ use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 use ReactParallel\Pool\Infinite\Metrics;
 use ReactParallel\Tests\AbstractPoolTest;
+use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
 use WyriHaximus\Metrics\Factory as MetricsFactory;
 use WyriHaximus\PoolInfo\PoolInfoInterface;
 use WyriHaximus\PoolInfo\PoolInfoTestTrait;
@@ -33,7 +34,7 @@ if (InstalledVersions::satisfies(new VersionParser(), 'wyrihaximus/pool-info', '
         }
     }
 } else {
-    final class ExternalTest
+    final class ExternalTest extends AsyncTestCase
     {
         /** @test */
         public function aquireLock(): void
