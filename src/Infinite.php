@@ -18,9 +18,7 @@ use WyriHaximus\PoolInfo\Info;
 
 use function array_key_exists;
 use function array_pop;
-use function assert;
 use function count;
-use function is_int;
 use function Safe\hrtime;
 use function spl_object_id;
 
@@ -108,8 +106,8 @@ final class Infinite implements LowLevelPoolInterface
 
         $this->closed = TRUE_;
 
-        foreach ($this->runtimes as $hash => $runtime) {
-            $this->closeRuntime($hash);
+        foreach ($this->runtimes as $id => $runtime) {
+            $this->closeRuntime($id);
         }
 
         return TRUE_;
@@ -157,21 +155,20 @@ final class Infinite implements LowLevelPoolInterface
 
     private function getIdleRuntime(): Runtime
     {
-        $hash = array_pop($this->idleRuntimes);
-        assert(is_int($hash));
+        $id = array_pop($this->idleRuntimes);
 
-        if (array_key_exists($hash, $this->ttlTimers)) {
-            Loop::cancelTimer($this->ttlTimers[$hash]);
-            unset($this->ttlTimers[$hash]);
+        if (array_key_exists($id, $this->ttlTimers)) {
+            Loop::cancelTimer($this->ttlTimers[$id]);
+            unset($this->ttlTimers[$id]);
         }
 
-        return $this->runtimes[$hash];
+        return $this->runtimes[$id];
     }
 
     private function addRuntimeToIdleList(Runtime $runtime): void
     {
-        $hash                      = spl_object_id($runtime);
-        $this->idleRuntimes[$hash] = $hash;
+        $id                      = spl_object_id($runtime);
+        $this->idleRuntimes[$id] = $id;
     }
 
     private function spawnRuntime(): Runtime
@@ -188,38 +185,43 @@ final class Infinite implements LowLevelPoolInterface
 
     private function startTtlTimer(Runtime $runtime): void
     {
-        $hash = spl_object_id($runtime);
+        $id = spl_object_id($runtime);
 
-        $this->ttlTimers[$hash] = Loop::addTimer($this->ttl, function () use ($hash): void {
-            $this->closeRuntime($hash);
+        $this->ttlTimers[$id] = Loop::addTimer($this->ttl, function () use ($id): void {
+            $this->closeRuntime($id);
         });
     }
 
-    private function closeRuntime(int $hash): void
+    private function closeRuntime(int $id): void
     {
-        $runtime = $this->runtimes[$hash];
+        if (! array_key_exists($id, $this->runtimes)) {
+            return;
+        }
+
+        // check if it exists
+        $runtime = $this->runtimes[$id];
         try {
             $runtime->close();
         } catch (Closed) {
             // @ignoreException
         }
 
-        unset($this->runtimes[$hash]);
+        unset($this->runtimes[$id]);
 
-        if (array_key_exists($hash, $this->idleRuntimes)) {
-            unset($this->idleRuntimes[$hash]);
+        if (array_key_exists($id, $this->idleRuntimes)) {
+            unset($this->idleRuntimes[$id]);
         }
 
         if ($this->metrics instanceof Metrics) {
             $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
         }
 
-        if (! array_key_exists($hash, $this->ttlTimers)) {
+        if (! array_key_exists($id, $this->ttlTimers)) {
             return;
         }
 
-        Loop::cancelTimer($this->ttlTimers[$hash]);
+        Loop::cancelTimer($this->ttlTimers[$id]);
 
-        unset($this->ttlTimers[$hash]);
+        unset($this->ttlTimers[$id]);
     }
 }
