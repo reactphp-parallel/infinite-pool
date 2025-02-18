@@ -194,6 +194,10 @@ final class Infinite implements LowLevelPoolInterface
 
     private function closeRuntime(int $id): void
     {
+        if (! array_key_exists($id, $this->runtimes)) {
+            return;
+        }
+
         // check if it exists
         $runtime = $this->runtimes[$id];
         try {
