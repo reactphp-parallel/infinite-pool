@@ -26,7 +26,7 @@
         "moneyphp/money": "^3.2",
         "react-parallel/pool-tests": "^4.0.0",
         "react-parallel/stubs": "^1.2",
-        "wyrihaximus/async-test-utilities": "^5 || ^7.3"
+        "wyrihaximus/async-test-utilities": "^5 || ^7.3 || ^9.0"
     },
     "suggest": {
         "ext-random": "More secure group names"
