@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace ReactParallel\Tests\Pool\Infinite;
 
+use PHPUnit\Framework\Attributes\Test;
 use React\EventLoop\Loop;
 use ReactParallel\Contracts\PoolInterface;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
 use ReactParallel\Pool\Infinite\Metrics;
 use ReactParallel\Tests\AbstractPoolTest;
-//use WyriHaximus\AsyncTestUtilities\AsyncTestCase;
 use WyriHaximus\Metrics\Factory as MetricsFactory;
+use WyriHaximus\Metrics\Printer\Prometheus;
 use WyriHaximus\PoolInfo\Info;
 use WyriHaximus\PoolInfo\PoolInfoInterface;
 use WyriHaximus\PoolInfo\PoolInfoTestTrait;
@@ -19,16 +20,16 @@ use WyriHaximus\PoolInfo\PoolInfoTestTrait;
 use function sleep;
 
 final class InfiniteTest extends AbstractPoolTest
-//final class InfiniteTest extends AsyncTestCase
 {
     use PoolInfoTestTrait;
 
-    /** @test */
+    #[Test]
     public function withAZeroTTLThreadsShouldBeKilledOffImmidetally(): void
     {
-        $pool = (new Infinite(new EventLoopBridge(), 0.0))->withMetrics(Metrics::create(MetricsFactory::create()));
+        $registry = MetricsFactory::create();
+        $pool     = (new Infinite(new EventLoopBridge(), 0.0))->withMetrics(Metrics::create($registry));
 
-        Loop::addTimer(1, static function () use ($pool): void {
+        Loop::addTimer(1, static function () use ($pool, $registry): void {
             self::assertSame([
                 Info::TOTAL => 1,
                 Info::BUSY => 1,
@@ -36,7 +37,14 @@ final class InfiniteTest extends AbstractPoolTest
                 Info::IDLE  => 0,
                 Info::SIZE  => 1,
             ], [...$pool->info()]);
+
+            $metrics = $registry->print(new Prometheus());
+            self::assertStringContainsString('react_parallel_pool_infinite_threads{state="idle"} 0', $metrics);
+            self::assertStringContainsString('react_parallel_pool_infinite_threads{state="busy"} 1', $metrics);
         });
+
+        $metrics = $registry->print(new Prometheus());
+        self::assertSame("\n\n# EOF\n", $metrics);
 
         self::assertSame([
             Info::TOTAL => 0,
@@ -52,6 +60,14 @@ final class InfiniteTest extends AbstractPoolTest
             return 42;
         });
 
+        $metrics = $registry->print(new Prometheus());
+        self::assertStringContainsString('react_parallel_pool_infinite_threads{state="idle"} 0', $metrics);
+        self::assertStringContainsString('react_parallel_pool_infinite_threads{state="busy"} 0', $metrics);
+        self::assertStringContainsString('react_parallel_pool_infinite_execution_time{quantile="0.1"} 3.0', $metrics);
+        self::assertStringContainsString('react_parallel_pool_infinite_execution_time{quantile="0.5"} 3.0', $metrics);
+        self::assertStringContainsString('react_parallel_pool_infinite_execution_time{quantile="0.9"} 3.0', $metrics);
+        self::assertStringContainsString('react_parallel_pool_infinite_execution_time{quantile="0.99"} 3.0', $metrics);
+
         self::assertSame([
             Info::TOTAL => 0,
             Info::BUSY => 0,
@@ -64,7 +80,7 @@ final class InfiniteTest extends AbstractPoolTest
         self::assertSame(42, $asteriks); /** @phpstan-ignore-line */
     }
 
-    /** @test */
+    #[Test]
     public function withAnAlmostZeroTTLThreadsShouldNotBeKilledOffImmidetally(): void
     {
         $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
@@ -140,7 +156,7 @@ final class InfiniteTest extends AbstractPoolTest
         return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
     }
 
-    /** @test */
+    #[Test]
     public function aquireLock(): void
     {
         $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
@@ -152,5 +168,14 @@ final class InfiniteTest extends AbstractPoolTest
         $pool->releaseGroup($group);
         self::assertTrue($pool->close());
         self::assertTrue($pool->kill());
+    }
+
+    #[Test]
+    public function withMetrics(): void
+    {
+        $pool            = new Infinite(new EventLoopBridge(), 5);
+        $poolWithmetrics = $pool->withMetrics(Metrics::create(MetricsFactory::create()));
+
+        self::assertNotSame($pool, $poolWithmetrics);
     }
 }

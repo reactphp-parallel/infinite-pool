@@ -8,11 +8,11 @@ use WyriHaximus\Metrics\Factory as MetricsFactory;
 use WyriHaximus\Metrics\Label\Name;
 use WyriHaximus\Metrics\Registry;
 
-final class Metrics
+final readonly class Metrics
 {
     public function __construct(
-        private Registry\Gauges $threads,
-        private Registry\Summaries $executionTime,
+        public Registry\Gauges $threads,
+        public Registry\Summaries $executionTime,
     ) {
     }
 
@@ -32,11 +32,13 @@ final class Metrics
         );
     }
 
+    /** @deprecated Use threads property instead */
     public function threads(): Registry\Gauges
     {
         return $this->threads;
     }
 
+    /** @deprecated Use executionTime property instead */
     public function executionTime(): Registry\Summaries
     {
         return $this->executionTime;

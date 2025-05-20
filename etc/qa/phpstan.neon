@@ -17,7 +17,3 @@ parameters:
 				- ReactParallel\EventLoop\CanceledFuture
 				- ReactParallel\EventLoop\KilledRuntime
 				- ReactParallel\Tests\AbstractPoolTest
-
-includes:
-	- ../../vendor/wyrihaximus/async-test-utilities/rules.neon
-	- ../../vendor/react-parallel/stubs/extension.neon
