@@ -36,7 +36,7 @@ if (InstalledVersions::satisfies(new VersionParser(), 'wyrihaximus/pool-info', '
 } else {
     final class ExternalTest extends AsyncTestCase
     {
-        /** @test */
+        #[\PHPUnit\Framework\Attributes\Test]
         public function aquireLock(): void
         {
             $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));

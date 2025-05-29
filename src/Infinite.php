@@ -17,9 +17,10 @@ use WyriHaximus\Metrics\Label;
 use WyriHaximus\PoolInfo\Info;
 
 use function array_key_exists;
+use function array_keys;
 use function array_pop;
 use function count;
-use function Safe\hrtime;
+use function hrtime;
 use function spl_object_id;
 
 use const WyriHaximus\Constants\Boolean\FALSE_;
@@ -64,16 +65,12 @@ final class Infinite implements LowLevelPoolInterface
             throw ClosedException::create();
         }
 
-        if (count($this->idleRuntimes) === 0) {
-            $runtime = $this->spawnRuntime();
-        } else {
-            $runtime = $this->getIdleRuntime();
-        }
+        $runtime = count($this->idleRuntimes) === 0 ? $this->spawnRuntime() : $this->getIdleRuntime();
 
         $time = null;
         if ($this->metrics instanceof Metrics) {
-            $this->metrics->threads()->gauge(new Label('state', 'busy'))->incr();
-            $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
+            $this->metrics->threads->gauge(new Label('state', 'busy'))->incr();
+            $this->metrics->threads->gauge(new Label('state', 'idle'))->dcr();
             $time = hrtime(true);
         }
 
@@ -84,9 +81,9 @@ final class Infinite implements LowLevelPoolInterface
             );
         } finally {
             if ($this->metrics instanceof Metrics) {
-                $this->metrics->executionTime()->summary()->observe((hrtime(true) - $time) / 1e+9); /** @phpstan-ignore-line */
-                $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
-                $this->metrics->threads()->gauge(new Label('state', 'busy'))->dcr();
+                $this->metrics->executionTime->summary()->observe((hrtime(true) - $time) / 1e+9);
+                $this->metrics->threads->gauge(new Label('state', 'idle'))->incr();
+                $this->metrics->threads->gauge(new Label('state', 'busy'))->dcr();
             }
 
             if ($this->ttl >= 0.1) {
@@ -106,7 +103,7 @@ final class Infinite implements LowLevelPoolInterface
 
         $this->closed = TRUE_;
 
-        foreach ($this->runtimes as $id => $runtime) {
+        foreach (array_keys($this->runtimes) as $id) {
             $this->closeRuntime($id);
         }
 
@@ -157,12 +154,18 @@ final class Infinite implements LowLevelPoolInterface
     {
         $id = array_pop($this->idleRuntimes);
 
-        if (array_key_exists($id, $this->ttlTimers)) {
-            Loop::cancelTimer($this->ttlTimers[$id]);
-            unset($this->ttlTimers[$id]);
+        if ($id !== null) {
+            if (array_key_exists($id, $this->ttlTimers)) {
+                Loop::cancelTimer($this->ttlTimers[$id]);
+                unset($this->ttlTimers[$id]);
+            }
+
+            if (array_key_exists($id, $this->runtimes)) {
+                return $this->runtimes[$id];
+            }
         }
 
-        return $this->runtimes[$id];
+        return $this->spawnRuntime();
     }
 
     private function addRuntimeToIdleList(Runtime $runtime): void
@@ -177,7 +180,7 @@ final class Infinite implements LowLevelPoolInterface
         $this->runtimes[spl_object_id($runtime)] = $runtime;
 
         if ($this->metrics instanceof Metrics) {
-            $this->metrics->threads()->gauge(new Label('state', 'idle'))->incr();
+            $this->metrics->threads->gauge(new Label('state', 'idle'))->incr();
         }
 
         return $runtime;
@@ -213,7 +216,7 @@ final class Infinite implements LowLevelPoolInterface
         }
 
         if ($this->metrics instanceof Metrics) {
-            $this->metrics->threads()->gauge(new Label('state', 'idle'))->dcr();
+            $this->metrics->threads->gauge(new Label('state', 'idle'))->dcr();
         }
 
         if (! array_key_exists($id, $this->ttlTimers)) {
