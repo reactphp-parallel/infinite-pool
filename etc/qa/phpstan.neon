@@ -10,6 +10,8 @@ parameters:
 		-
 			message: '#sleep blocks the event loop#'
 			path: ../../tests/Types.php
+		-
+			identifier: ergebnis.noParameterWithNullableTypeDeclaration
 	ergebnis:
 		noExtends:
 			classesAllowedToBeExtended:

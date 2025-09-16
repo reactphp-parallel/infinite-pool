@@ -27,7 +27,7 @@ final class InfiniteTest extends AbstractPoolTest
     public function withAZeroTTLThreadsShouldBeKilledOffImmidetally(): void
     {
         $registry = MetricsFactory::create();
-        $pool     = (new Infinite(new EventLoopBridge(), 0.0))->withMetrics(Metrics::create($registry));
+        $pool     = new Infinite(new EventLoopBridge(), 0.0)->withMetrics(Metrics::create($registry));
 
         Loop::addTimer(1, static function () use ($pool, $registry): void {
             self::assertSame([
@@ -83,7 +83,7 @@ final class InfiniteTest extends AbstractPoolTest
     #[Test]
     public function withAnAlmostZeroTTLThreadsShouldNotBeKilledOffImmidetally(): void
     {
-        $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+        $pool = new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
 
         Loop::addTimer(1, static function () use ($pool): void {
             self::assertSame([
@@ -148,18 +148,18 @@ final class InfiniteTest extends AbstractPoolTest
     /** @phpstan-ignore-next-line */
     private function poolFactory(): PoolInfoInterface
     {
-        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+        return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
     }
 
     protected function createPool(): PoolInterface
     {
-        return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+        return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
     }
 
     #[Test]
     public function aquireLock(): void
     {
-        $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+        $pool = new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
 
         $group = $pool->acquireGroup();
         self::assertFalse($pool->close());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ReactParallel\Pool\Infinite;
 
+use Deprecated;
 use WyriHaximus\Metrics\Factory as MetricsFactory;
 use WyriHaximus\Metrics\Label\Name;
 use WyriHaximus\Metrics\Registry;
@@ -32,13 +33,13 @@ final readonly class Metrics
         );
     }
 
-    /** @deprecated Use threads property instead */
+    #[Deprecated(message: 'Use threads property instead')]
     public function threads(): Registry\Gauges
     {
         return $this->threads;
     }
 
-    /** @deprecated Use executionTime property instead */
+    #[Deprecated(message: 'Use executionTime property instead')]
     public function executionTime(): Registry\Summaries
     {
         return $this->executionTime;
