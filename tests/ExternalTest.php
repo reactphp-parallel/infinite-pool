@@ -25,12 +25,12 @@ if (InstalledVersions::satisfies(new VersionParser(), 'wyrihaximus/pool-info', '
         /** @phpstan-ignore-next-line */
         private function poolFactory(): PoolInfoInterface
         {
-            return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+            return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
         }
 
         protected function createPool(): PoolInterface
         {
-            return (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+            return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
         }
     }
 } else {
@@ -39,7 +39,7 @@ if (InstalledVersions::satisfies(new VersionParser(), 'wyrihaximus/pool-info', '
         #[\PHPUnit\Framework\Attributes\Test]
         public function aquireLock(): void
         {
-            $pool = (new Infinite(new EventLoopBridge(), 5))->withMetrics(Metrics::create(MetricsFactory::create()));
+            $pool = new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
 
             $group = $pool->acquireGroup();
             self::assertFalse($pool->close());

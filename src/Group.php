@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ReactParallel\Pool\Infinite;
 
+use Random\RandomException;
 use ReactParallel\Contracts\GroupInterface;
 
 use function bin2hex;
@@ -14,16 +15,21 @@ use function spl_object_hash;
 
 final readonly class Group implements GroupInterface
 {
-    private const int BYTES = 16;
+    private const int BYTES = 32;
 
     private function __construct(private string $id)
     {
     }
 
-    public static function create(): self
+    /**
+     * @param int<1, max>|null $bytes
+     *
+     * @throws RandomException
+     */
+    public static function create(int|null $bytes = self::BYTES): self
     {
         if (function_exists('random_bytes')) {
-            return new self(bin2hex(random_bytes(self::BYTES)));
+            return new self(bin2hex(random_bytes($bytes ?? self::BYTES)));
         }
 
         return new self(md5(spl_object_hash(new self('a'))));
