@@ -26,7 +26,7 @@
     "moneyphp/money": "^4.7.0",
     "react-parallel/pool-tests": "^5.1.0",
     "react-parallel/stubs": "^1.2",
-    "wyrihaximus/async-test-utilities": "^10.3.0",
+    "wyrihaximus/async-test-utilities": "^10.4.0",
     "wyrihaximus/makefiles": "^0.7.5"
   },
   "suggest": {
