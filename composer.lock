@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "24615d32124358c7df3e4229bd188b07",
+    "content-hash": "be575038457998170fd32b88037660be",
     "packages": [
         {
             "name": "lcobucci/clock",
@@ -9499,16 +9499,16 @@
         },
         {
             "name": "wyrihaximus/makefiles",
-            "version": "0.7.12",
+            "version": "0.7.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/WyriHaximus/Makefiles.git",
-                "reference": "9419d6ee290018f90d38cf869675aaadb480af52"
+                "reference": "46ae4194ccd77dcccedf501b64c0c0209eb4a9cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/WyriHaximus/Makefiles/zipball/9419d6ee290018f90d38cf869675aaadb480af52",
-                "reference": "9419d6ee290018f90d38cf869675aaadb480af52",
+                "url": "https://api.github.com/repos/WyriHaximus/Makefiles/zipball/46ae4194ccd77dcccedf501b64c0c0209eb4a9cc",
+                "reference": "46ae4194ccd77dcccedf501b64c0c0209eb4a9cc",
                 "shasum": ""
             },
             "require": {
@@ -9544,7 +9544,7 @@
             "description": "🧱 Makefile building blocks",
             "support": {
                 "issues": "https://github.com/WyriHaximus/Makefiles/issues",
-                "source": "https://github.com/WyriHaximus/Makefiles/tree/0.7.12"
+                "source": "https://github.com/WyriHaximus/Makefiles/tree/0.7.13"
             },
             "funding": [
                 {
@@ -9552,7 +9552,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-14T15:56:44+00:00"
+            "time": "2025-11-26T19:47:16+00:00"
         },
         {
             "name": "wyrihaximus/phpstan-react",
