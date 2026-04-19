@@ -9,6 +9,7 @@ use WyriHaximus\Metrics\Factory as MetricsFactory;
 use WyriHaximus\Metrics\Label\Name;
 use WyriHaximus\Metrics\Registry;
 
+/** @api */
 final readonly class Metrics
 {
     public function __construct(
