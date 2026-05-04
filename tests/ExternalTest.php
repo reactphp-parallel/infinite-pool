@@ -22,8 +22,7 @@ if (InstalledVersions::satisfies(new VersionParser(), 'wyrihaximus/pool-info', '
     {
         use PoolInfoTestTrait;
 
-        /** @phpstan-ignore-next-line */
-        private function poolFactory(): PoolInfoInterface
+        protected function poolFactory(): PoolInfoInterface
         {
             return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
         }

@@ -10,7 +10,7 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR 
 
 $infinite = new Infinite(new EventLoopBridge(), 1);
 
-Loop::futureTick(async(static function () use ($infinite) {
+Loop::futureTick(async(static function () use ($infinite): void {
     try {
         $infinite->run(static function (): void {
             throw new RuntimeException('Whoops I did it again!');

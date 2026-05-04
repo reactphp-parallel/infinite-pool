@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use React\EventLoop\Loop;
 use ReactParallel\EventLoop\EventLoopBridge;
-
 use ReactParallel\Pool\Infinite\Infinite;
+
 use function React\Async\async;
 use function React\Async\await;
 use function React\Promise\all;
@@ -16,8 +16,8 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR 
 
 $infinite = new Infinite(new EventLoopBridge(), 1);
 
-Loop::futureTick(async(static function () use ($infinite, $json) {
-    $promises = [];
+Loop::futureTick(async(static function () use ($infinite, $json): void {
+    $promises      = [];
     $signalHandler = static function () use ($infinite): void {
         Loop::stop();
         $infinite->close();
@@ -25,7 +25,7 @@ Loop::futureTick(async(static function () use ($infinite, $json) {
 
     $tick = async(static function () use (&$promises, $infinite, $signalHandler, $json, &$tick): void {
         if (count($promises) < 1000) {
-            $promises[] = async(static fn(string $json): string => $infinite->run(static function ($json): string {
+            $promises[] = async(static fn (string $json): string => $infinite->run(static function ($json): string {
                 $json = json_decode($json, true);
 
                 return md5(json_encode($json));
