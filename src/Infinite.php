@@ -26,6 +26,7 @@ use function spl_object_id;
 use const WyriHaximus\Constants\Boolean\FALSE_;
 use const WyriHaximus\Constants\Boolean\TRUE_;
 
+/** @api */
 final class Infinite implements LowLevelPoolInterface
 {
     /** @var Runtime[] */
