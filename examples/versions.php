@@ -6,13 +6,14 @@ use Composer\InstalledVersions;
 use React\EventLoop\Loop;
 use ReactParallel\EventLoop\EventLoopBridge;
 use ReactParallel\Pool\Infinite\Infinite;
+
 use function React\Async\async;
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 
 $infinite = new Infinite(new EventLoopBridge(), 0.1);
 
-Loop::futureTick(async(static function () use ($infinite) {
+Loop::futureTick(async(static function () use ($infinite): void {
     Loop::addTimer(1, static function () use ($infinite): void {
         $infinite->kill();
         Loop::stop();
@@ -26,8 +27,8 @@ Loop::futureTick(async(static function () use ($infinite) {
                         $package => InstalledVersions::getPrettyVersion($package),
                     ],
                     InstalledVersions::getInstalledPackages(),
-                )
-            )
-        )
+                ),
+            ),
+        ),
     );
 }));

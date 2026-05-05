@@ -15,7 +15,7 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR 
 
 $infinite = new Infinite(new EventLoopBridge(), 0.1);
 
-Loop::futureTick(async(static function () use ($infinite) {
+Loop::futureTick(async(static function () use ($infinite): void {
     $timer = Loop::addPeriodicTimer(1, static function () use ($infinite): void {
         var_export(iteratorOrArrayToArray($infinite->info()));
     });

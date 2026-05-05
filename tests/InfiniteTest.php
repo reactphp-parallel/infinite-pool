@@ -77,7 +77,8 @@ final class InfiniteTest extends AbstractPoolTest
         ], [...$pool->info()]);
 
         $pool->kill();
-        self::assertSame(42, $asteriks); /** @phpstan-ignore-line */
+        /** @phpstan-ignore staticMethod.alreadyNarrowedType */
+        self::assertSame(42, $asteriks);
     }
 
     #[Test]
@@ -142,11 +143,11 @@ final class InfiniteTest extends AbstractPoolTest
         ], [...$pool->info()]);
 
         $pool->kill();
-        self::assertSame(42, $asteriks); /** @phpstan-ignore-line */
+        /** @phpstan-ignore staticMethod.alreadyNarrowedType */
+        self::assertSame(42, $asteriks);
     }
 
-    /** @phpstan-ignore-next-line */
-    private function poolFactory(): PoolInfoInterface
+    protected function poolFactory(): PoolInfoInterface
     {
         return new Infinite(new EventLoopBridge(), 5)->withMetrics(Metrics::create(MetricsFactory::create()));
     }
