@@ -59,7 +59,7 @@ $infinite = (new Infinite($eventLoopBridge, 1.3))->withMetrics(Metrics::create($
 
 ## License ##
 
-Copyright 2025 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
+Copyright 2026 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

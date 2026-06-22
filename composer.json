@@ -27,7 +27,7 @@
     "react-parallel/pool-tests": "^5.1.0 || ^6.0.0",
     "react-parallel/stubs": "^1.2",
     "wyrihaximus/async-test-utilities": "^12.2.0",
-    "wyrihaximus/makefiles": "^0.10.6"
+    "wyrihaximus/makefiles": "^0.12.0"
   },
   "suggest": {
     "ext-random": "More secure group names"
