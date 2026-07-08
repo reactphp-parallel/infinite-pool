@@ -9,11 +9,11 @@ use function PHPStan\Testing\assertType;
 
 $pool = new Infinite(new EventLoopBridge(), 13);
 
-assertType('Closure(): void', (static fn () => $pool->run(static function (): void {
+assertType('static-Closure(): void', (static fn () => $pool->run(static function (): void {
     sleep(1);
 })));
 
-assertType('Closure(): void', (static fn () => $pool->run(static function (int $time): void {
+assertType('static-Closure(): void', (static fn () => $pool->run(static function (int $time): void {
     sleep($time);
 }, [1])));
 

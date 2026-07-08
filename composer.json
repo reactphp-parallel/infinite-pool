@@ -24,9 +24,9 @@
   },
   "require-dev": {
     "moneyphp/money": "^4.8.0",
-    "react-parallel/pool-tests": "^5.1.0 || ^6.0.0",
+    "react-parallel/pool-tests": "^7.0.0",
     "react-parallel/stubs": "^1.2",
-    "wyrihaximus/async-test-utilities": "^12.2.0",
+    "wyrihaximus/async-test-utilities": "^13.3.0",
     "wyrihaximus/makefiles": "^0.12.3"
   },
   "suggest": {
