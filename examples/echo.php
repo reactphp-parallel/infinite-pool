@@ -13,7 +13,7 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR 
 $infinite = new Infinite(new EventLoopBridge(), 1);
 
 Loop::futureTick(async(static function () use ($infinite): void {
-    echo $infinite->run(static function () {
+    echo $infinite->run(static function (): string {
         sleep(1);
 
         return 'Hoi!';
