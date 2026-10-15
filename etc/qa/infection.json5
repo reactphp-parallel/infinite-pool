@@ -48,5 +48,6 @@
                 "ReactParallel\\Pool\\Infinite\\Infinite"
             ]
         }
-    }
+    },
+    "threads": 64
 }

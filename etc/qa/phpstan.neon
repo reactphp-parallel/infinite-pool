@@ -6,9 +6,6 @@ parameters:
 	level: max
 	ignoreErrors:
 		-
-			message: '#Method ReactParallel\\Pool\\Infinite\\Infinite::run\(\) should return T\|null but returns T\|void\|null.#'
-			path: ../../src/Infinite.php
-		-
 			message: '#sleep blocks the event loop#'
 			path: ../../tests/InfiniteTest.php
 		-

@@ -9,7 +9,7 @@
 
 ReactPHP bindings around ext-parallel-infinite-pool
 
-## Install ##
+## Install
 
 To install via [Composer](http://getcomposer.org/), use the command below, it will automatically detect the latest version and bind it with `~`.
 
@@ -17,7 +17,7 @@ To install via [Composer](http://getcomposer.org/), use the command below, it wi
 composer require react-parallel/infinite-pool
 ```
 
-## Usage ##
+# Usage
 
 The following example will spin up a thread with a 1 second TTL clean up policy. Meaning that threads are kept around
 for 1 second waiting for something to do before closed. It then runs a closure in the thread that will wait for one
@@ -57,7 +57,7 @@ $eventLoopBridge = (new EventLoopBridge())->withMetrics(EventLoopMetrics::create
 $infinite = (new Infinite($eventLoopBridge, 1.3))->withMetrics(Metrics::create($registry));
 ```
 
-## License ##
+## License
 
 Copyright 2026 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
