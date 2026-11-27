@@ -19,10 +19,9 @@ composer require react-parallel/infinite-pool
 
 # Usage
 
-The following example will spin up a thread with a 1 second TTL clean up policy. Meaning that threads are kept around
-for 1 second waiting for something to do before closed. It then runs a closure in the thread that will wait for one
-second before returning an message. Upon receiving that message the mean thread will echo out that message before
-closing the pool;
+This example starts a thread with a 1-second TTL cleanup policy. The pool keeps threads around for one second while
+they wait for work, then closes them. It then runs a closure in the thread that waits for one second before returning
+a message. Upon receiving that message, the main thread echoes it before closing the pool.
 
 ```php
 use ReactParallel\EventLoop\EventLoopBridge;
@@ -61,6 +60,7 @@ $infinite = (new Infinite($eventLoopBridge, 1.3))->withMetrics(Metrics::create($
 
 Copyright 2026 [Cees-Jan Kiewiet](http://wyrihaximus.net/)
 
+<!-- vale write-good = NO -->
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
 files (the "Software"), to deal in the Software without
@@ -73,6 +73,7 @@ conditions:
 The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
 
+<!-- vale neighbor.AllCapsProse = NO -->
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -81,3 +82,5 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
+<!-- vale neighbor.AllCapsProse = yes -->
+<!-- vale write-good = yes -->
